@@ -1,0 +1,76 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.govukfrontend.views.html.components.*
+@import viewmodels.InputWidth.*
+@import viewmodels.govuk.all.{ButtonViewModel, ErrorSummaryViewModel, FluentInput, InputViewModel, LabelViewModel}
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukFieldset: GovukFieldset,
+        govukInput: GovukInput,
+        govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+)
+
+
+@(form: Form[?], mode: Mode)(implicit request: Request[_], messages: Messages)
+
+@layout(
+    pageTitle = titleNoForm(messages("sdec.page.title"))
+) {
+
+    @formHelper(action = controllers.routes.EnterThreadReferenceController.onContinue()) {
+
+        @if(form.hasErrors) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        @govukFieldset(Fieldset(
+            legend = Some(Legend(
+                content = Text(messages("sdec.enterthreadref.thread.enterref")),
+                classes = "govuk-fieldset__legend--l",
+                isPageHeading = true
+            ))
+        ))
+
+        @if(form("thread-reference").hasErrors) {
+            @govukInput(Input(
+                id = "thread-reference",
+                name = "thread-reference",
+                value = form("thread-reference").value,
+                classes = "govuk-!-width-two-thirds",
+                label = LabelViewModel(messages("sdec.enterthreadref.thread.help")),
+                errorMessage = Some(ErrorMessage(content = Text(messages("sdec.enterthreadref.error.threadref.help"))))
+            )
+            )
+        } else {
+            @govukInput(
+                InputViewModel(
+                    field = form("thread-reference"),
+                    label = LabelViewModel(messages("sdec.enterthreadref.thread.help"))
+                )
+                .withWidth(TwoThirds)
+            )
+        }
+
+        @govukButton(
+            ButtonViewModel(messages("sdec.button.continue"))
+        )
+
+    }
+}

@@ -2,8 +2,6 @@
 
 ->          /hmrc-frontend                               hmrcfrontend.Routes
 
-GET         /                                            controllers.IndexController.onPageLoad()
-
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
 GET         /language/:lang                              controllers.LanguageSwitchController.switchToLanguage(lang: String)
@@ -19,3 +17,7 @@ GET         /account/sign-out                            controllers.auth.AuthCo
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad()
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
+GET         /                                            controllers.IndexController.onPageLoad()
+
+GET         /thread-reference                            controllers.EnterThreadReferenceController.onPageLoad(mode: Mode = NormalMode)
+POST        /thread-reference                            controllers.EnterThreadReferenceController.onContinue(mode: Mode = NormalMode)

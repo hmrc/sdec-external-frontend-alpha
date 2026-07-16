@@ -1,4 +1,20 @@
-import play.api.libs.json._
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import play.api.libs.json.*
 
 package object models {
 
@@ -29,29 +45,35 @@ package object models {
           setKeyNode(n, jsValue, value)
 
         case (first :: second :: rest, oldValue) =>
-          Reads.optionNoError(Reads.at[JsValue](JsPath(first :: Nil)))
-            .reads(oldValue).flatMap {
-            opt =>
-
-              opt.map(JsSuccess(_)).getOrElse {
-                second match {
-                  case _: KeyPathNode =>
-                    JsSuccess(Json.obj())
-                  case _: IdxPathNode =>
-                    JsSuccess(Json.arr())
-                  case _: RecursiveSearch =>
-                    JsError("recursive search is not supported")
+          Reads
+            .optionNoError(Reads.at[JsValue](JsPath(first :: Nil)))
+            .reads(oldValue)
+            .flatMap { opt =>
+              opt
+                .map(JsSuccess(_))
+                .getOrElse {
+                  second match {
+                    case _: KeyPathNode =>
+                      JsSuccess(Json.obj())
+                    case _: IdxPathNode =>
+                      JsSuccess(Json.arr())
+                    case _: RecursiveSearch =>
+                      JsError("recursive search is not supported")
+                  }
                 }
-              }.flatMap {
-                _.set(JsPath(second :: rest), value).flatMap {
-                  newValue =>
+                .flatMap {
+                  _.set(JsPath(second :: rest), value).flatMap { newValue =>
                     oldValue.set(JsPath(first :: Nil), newValue)
+                  }
                 }
-              }
-          }
+            }
       }
 
-    private def setIndexNode(node: IdxPathNode, oldValue: JsValue, newValue: JsValue): JsResult[JsValue] = {
+    private def setIndexNode(
+        node: IdxPathNode,
+        oldValue: JsValue,
+        newValue: JsValue
+    ): JsResult[JsValue] = {
 
       val index: Int = node.idx
 
@@ -69,18 +91,30 @@ package object models {
       }
     }
 
-    private def removeIndexNode(node: IdxPathNode, valueToRemoveFrom: JsArray): JsResult[JsValue] = {
+    private def removeIndexNode(
+        node: IdxPathNode,
+        valueToRemoveFrom: JsArray
+    ): JsResult[JsValue] = {
       val index: Int = node.idx
 
       valueToRemoveFrom match {
-        case valueToRemoveFrom: JsArray if index >= 0 && index < valueToRemoveFrom.value.length =>
-          val updatedJsArray = valueToRemoveFrom.value.slice(0, index) ++ valueToRemoveFrom.value.slice(index + 1, valueToRemoveFrom.value.size)
+        case valueToRemoveFrom: JsArray
+            if index >= 0 && index < valueToRemoveFrom.value.length =>
+          val updatedJsArray = valueToRemoveFrom.value.slice(
+            0,
+            index
+          ) ++ valueToRemoveFrom.value.slice(index + 1, valueToRemoveFrom.value.size)
           JsSuccess(JsArray(updatedJsArray))
-        case valueToRemoveFrom: JsArray => JsError(s"array index out of bounds: $index, $valueToRemoveFrom")
+        case valueToRemoveFrom: JsArray =>
+          JsError(s"array index out of bounds: $index, $valueToRemoveFrom")
       }
     }
 
-    private def setKeyNode(node: KeyPathNode, oldValue: JsValue, newValue: JsValue): JsResult[JsValue] = {
+    private def setKeyNode(
+        node: KeyPathNode,
+        oldValue: JsValue,
+        newValue: JsValue
+    ): JsResult[JsValue] = {
 
       val key = node.key
 
@@ -96,32 +130,39 @@ package object models {
 
       (path.path, jsValue) match {
         case (Nil, _) => JsError("path cannot be empty")
-        case ((n: KeyPathNode) :: Nil, value: JsObject) if value.keys.contains(n.key) => JsSuccess(value - n.key)
-        case ((n: KeyPathNode) :: Nil, value: JsObject) if !value.keys.contains(n.key) => JsError("cannot find value at path")
+        case ((n: KeyPathNode) :: Nil, value: JsObject)
+            if value.keys.contains(n.key) =>
+          JsSuccess(value - n.key)
+        case ((n: KeyPathNode) :: Nil, value: JsObject)
+            if !value.keys.contains(n.key) =>
+          JsError("cannot find value at path")
         case ((n: IdxPathNode) :: Nil, value: JsArray) => removeIndexNode(n, value)
-        case ((_: KeyPathNode) :: Nil, _) => JsError(s"cannot remove a key on $jsValue")
+        case ((_: KeyPathNode) :: Nil, _)              =>
+          JsError(s"cannot remove a key on $jsValue")
         case (first :: second :: rest, oldValue) =>
 
-          Reads.optionNoError(Reads.at[JsValue](JsPath(first :: Nil)))
-            .reads(oldValue).flatMap {
-            (opt: Option[JsValue]) =>
-
-              opt.map(JsSuccess(_)).getOrElse {
-                second match {
-                  case _: KeyPathNode =>
-                    JsSuccess(Json.obj())
-                  case _: IdxPathNode =>
-                    JsSuccess(Json.arr())
-                  case _: RecursiveSearch =>
-                    JsError("recursive search is not supported")
+          Reads
+            .optionNoError(Reads.at[JsValue](JsPath(first :: Nil)))
+            .reads(oldValue)
+            .flatMap { (opt: Option[JsValue]) =>
+              opt
+                .map(JsSuccess(_))
+                .getOrElse {
+                  second match {
+                    case _: KeyPathNode =>
+                      JsSuccess(Json.obj())
+                    case _: IdxPathNode =>
+                      JsSuccess(Json.arr())
+                    case _: RecursiveSearch =>
+                      JsError("recursive search is not supported")
+                  }
                 }
-              }.flatMap {
-                _.remove(JsPath(second :: rest)).flatMap {
-                  newValue =>
+                .flatMap {
+                  _.remove(JsPath(second :: rest)).flatMap { newValue =>
                     oldValue.set(JsPath(first :: Nil), newValue)
+                  }
                 }
-              }
-          }
+            }
       }
     }
   }

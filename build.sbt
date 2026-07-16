@@ -1,16 +1,21 @@
 import play.sbt.routes.RoutesKeys
 import sbt.Def
-import scoverage.ScoverageKeys
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 lazy val appName: String = "sdec-external-frontend-alpha"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.3.5"
+ThisBuild / scalaVersion := "3.3.7"
+
+lazy val commonSettings = Seq(
+  scalacOptions += "-Wconf:src=routes/.*:s",
+  scalacOptions += "-Wconf:msg=unused import&src=html/.*:s",
+  scalacOptions += "-Wconf:msg=Flag.*repeatedly:s"
+)
 
 lazy val microservice = (project in file("."))
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+  .disablePlugins(JUnitXmlReportPlugin)
   .settings(inConfig(Test)(testSettings): _*)
   .settings(ThisBuild / useSuperShell := false)
   .settings(
@@ -31,21 +36,29 @@ lazy val microservice = (project in file("."))
       "controllers.routes._",
       "viewmodels.govuk.all._"
     ),
-    PlayKeys.playDefaultPort := 9000,
-    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*handlers.*;.*components.*;" +
-      ".*Routes.*;.*viewmodels.govuk.*;",
-    ScoverageKeys.coverageMinimumStmtTotal := 78,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
+    PlayKeys.playDefaultPort := 4502,
     scalacOptions ++= Seq(
       "-feature",
       "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"
     ),
     libraryDependencies ++= AppDependencies(),
-    retrieveManaged := true,
-    pipelineStages := Seq(digest),
-    Assets / pipelineStages := Seq(concat)
+    retrieveManaged             := true,
+    pipelineStages              := Seq(digest),
+    Assets / pipelineStages     := Seq(concat),
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile    := true,
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    Test / unmanagedSourceDirectories := (Test / baseDirectory)(base =>
+      Seq(base / "test", base / "test-common")
+    ).value,
+    Test / unmanagedResourceDirectories := Seq(
+      baseDirectory.value / "test-resources"
+    ),
+    Test / unmanagedSourceDirectories += baseDirectory.value / "test-utils",
+
+    commonSettings
   )
+  .settings(CodeCoverageSettings.settings: _*)
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -56,3 +69,21 @@ lazy val it =
   (project in file("it"))
     .enablePlugins(PlayScala)
     .dependsOn(microservice % "test->test")
+
+inThisBuild(
+  List(
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision
+  )
+)
+
+addCommandAlias(
+  "prePrChecks",
+  "; scalafmtCheckAll; scalafmtSbtCheck; scalafixAll --check"
+)
+addCommandAlias(
+  "checkCodeCoverage",
+  "; clean; coverage; test; it/test; coverageReport"
+)
+addCommandAlias("lint", "; scalafmtAll; scalafmtSbt; scalafixAll")
+addCommandAlias("prePush", "; reload; clean; compile; test; it/test; lint;")

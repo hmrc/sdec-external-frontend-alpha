@@ -34,4 +34,9 @@
         href = Some(routes.EnterThreadReferenceController.onPageLoad().url),
         content = Text(messages("sdec.index.enterthread"))
     ))
+
+  @govukButton(Button(
+      href = Some(routes.FileUploadController.onPageLoad().url),
+      content = Text(messages("sdec.index.button.upload"))
+  ))
 }

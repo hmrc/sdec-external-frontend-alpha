@@ -49,6 +49,8 @@ sdec.page.title = Share Files Securely with HMRC
 sdec.page.heading = Share Files Securely with HMRC
 sdec.index.guidance = What do you want to do?
 sdec.index.enterthread = Enter Thread Reference Number
+sdec.index.button.upload = Upload File
+
 sdec.enterthreadref.thread.enterref = Enter the thread reference number
 sdec.enterthreadref.thread.help = This can be found in the email you received from HMRC, for example HDJ2123F9K7M
 sdec.enterthreadref.error.enterref = Enter the thread reference number
@@ -59,3 +61,7 @@ sdec.threadinfopage.theadref = Thread Reference
 
 sdec.enterthreadref.api.notfound = The thread reference number cannot be found - double-check the number on your email and contact HMRC if you need further help.
 sdec.enterthreadref.api.error = There was a problem getting thread reference information
+
+file.uploaded.title = File uploaded
+file.upload.file = Upload Single File
+file.upload.files = Upload One or More Files

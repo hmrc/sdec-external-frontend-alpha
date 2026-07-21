@@ -21,3 +21,6 @@ GET         /                                            controllers.IndexContro
 
 GET         /thread-reference                            controllers.EnterThreadReferenceController.onPageLoad(mode: Mode = NormalMode)
 POST        /thread-reference                            controllers.EnterThreadReferenceController.onContinue(mode: Mode = NormalMode)
+GET         /file-upload                                 controllers.FileUploadController.onPageLoad(mode: Mode = NormalMode)
+POST        /file-upload                                 controllers.FileUploadController.upload(mode: Mode = NormalMode)
+POST        /files-upload                                controllers.FileUploadController.uploadFiles(mode: Mode = NormalMode)

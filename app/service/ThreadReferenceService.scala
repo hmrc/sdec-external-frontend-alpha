@@ -29,15 +29,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ThreadReferenceService @Inject (
-    appConfig: FrontendAppConfig,
-    http: HttpClientV2
+  appConfig: FrontendAppConfig,
+  http:      HttpClientV2
 ) extends ThreadReferenceServiceAlgebra
     with Logging {
 
   private val baseUrl = appConfig.threadInformationApi
 
   override def checkThreadReference(
-      threadReference: String
+    threadReference: String
   )(using hc: HeaderCarrier, ec: ExecutionContext): Future[ThreadReference] = {
     val urlString = s"$baseUrl/thread-reference/$threadReference"
     logger.info(s"ThreadReferenceService: GETting thread reference with $urlString")

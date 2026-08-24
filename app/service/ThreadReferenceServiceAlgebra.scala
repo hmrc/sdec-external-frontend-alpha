@@ -24,6 +24,6 @@ import scala.concurrent.{ExecutionContext, Future}
 trait ThreadReferenceServiceAlgebra {
 
   def checkThreadReference(
-      threadReference: String
+    threadReference: String
   )(using hc: HeaderCarrier, ec: ExecutionContext): Future[ThreadReference]
 }

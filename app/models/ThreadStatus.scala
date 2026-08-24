@@ -19,20 +19,20 @@ package models
 import play.api.libs.json.*
 
 enum ThreadStatus:
-    case Draft, Active, Closed, Archived
+  case Draft, Active, Closed, Archived
 
 object ThreadStatus:
 
-    given Format[ThreadStatus] = Format(
-      Reads {
-        case JsString(value) =>
-          ThreadStatus.values
-            .find(_.toString == value)
-            .map(JsSuccess(_))
-            .getOrElse(JsError(s"Unknown ThreadStatus: $value"))
+  given Format[ThreadStatus] = Format(
+    Reads {
+      case JsString(value) =>
+        ThreadStatus.values
+          .find(_.toString == value)
+          .map(JsSuccess(_))
+          .getOrElse(JsError(s"Unknown ThreadStatus: $value"))
 
-        case _ =>
-          JsError("Expected JSON string")
-      },
-      Writes(status => JsString(status.toString))
-    )
+      case _ =>
+        JsError("Expected JSON string")
+    },
+    Writes(status => JsString(status.toString))
+  )

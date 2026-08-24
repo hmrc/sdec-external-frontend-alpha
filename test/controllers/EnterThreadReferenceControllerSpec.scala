@@ -133,8 +133,8 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
 
         val mockThreadReferenceService = new ThreadReferenceServiceAlgebra {
           override def checkThreadReference(threadReferenceStr: String)(using
-              hc: HeaderCarrier,
-              ec: ExecutionContext
+            hc: HeaderCarrier,
+            ec: ExecutionContext
           ): Future[ThreadReference] =
             Future.successful(threadReference)
         }
@@ -145,7 +145,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
               bind[ThreadReferenceFormProvider]
                 .toInstance(new ThreadReferenceFormProvider {
                   override def validateThreadReference(
-                      reference: String
+                    reference: String
                   ): Boolean = true
                 }),
               bind[ThreadReferenceServiceAlgebra]
@@ -175,8 +175,8 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
 
         val mockThreadReferenceService = new ThreadReferenceServiceAlgebra {
           override def checkThreadReference(threadReferenceStr: String)(using
-              hc: HeaderCarrier,
-              ec: ExecutionContext
+            hc: HeaderCarrier,
+            ec: ExecutionContext
           ): Future[ThreadReference] =
             Future.failed(new NotFoundException("not found"))
         }
@@ -187,7 +187,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
               bind[ThreadReferenceFormProvider]
                 .toInstance(new ThreadReferenceFormProvider {
                   override def validateThreadReference(
-                      reference: String
+                    reference: String
                   ): Boolean = true
                 }),
               bind[ThreadReferenceServiceAlgebra]
@@ -217,8 +217,8 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
 
         val mockThreadReferenceService = new ThreadReferenceServiceAlgebra {
           override def checkThreadReference(threadReferenceStr: String)(using
-              hc: HeaderCarrier,
-              ec: ExecutionContext
+            hc: HeaderCarrier,
+            ec: ExecutionContext
           ): Future[ThreadReference] =
             Future.failed(
               new UpstreamErrorResponse(
@@ -236,7 +236,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
               bind[ThreadReferenceFormProvider]
                 .toInstance(new ThreadReferenceFormProvider {
                   override def validateThreadReference(
-                      reference: String
+                    reference: String
                   ): Boolean = true
                 }),
               bind[ThreadReferenceServiceAlgebra]
@@ -266,8 +266,8 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
 
         val mockThreadReferenceService = new ThreadReferenceServiceAlgebra {
           override def checkThreadReference(threadReferenceStr: String)(using
-              hc: HeaderCarrier,
-              ec: ExecutionContext
+            hc: HeaderCarrier,
+            ec: ExecutionContext
           ): Future[ThreadReference] =
             Future.failed(
               new UpstreamErrorResponse(
@@ -285,7 +285,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
               bind[ThreadReferenceFormProvider]
                 .toInstance(new ThreadReferenceFormProvider {
                   override def validateThreadReference(
-                      reference: String
+                    reference: String
                   ): Boolean = true
                 }),
               bind[ThreadReferenceServiceAlgebra]
@@ -319,7 +319,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
               bind[ThreadReferenceFormProvider]
                 .toInstance(new ThreadReferenceFormProvider {
                   override def validateThreadReference(
-                      reference: String
+                    reference: String
                   ): Boolean = false
                 })
             )

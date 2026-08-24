@@ -30,12 +30,6 @@ import service.ThreadReferenceServiceAlgebra
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{EnterThreadReferenceView, ThreadReferenceView}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{EnterThreadReferenceView, ThreadReferenceView, UnauthorisedView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

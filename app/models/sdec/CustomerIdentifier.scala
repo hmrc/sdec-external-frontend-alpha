@@ -16,12 +16,13 @@
 
 package models.sdec
 
-import uk.gov.hmrc.auth.core.Enrolments
+import play.api.libs.json.{Format, Json}
 
-final case class ExternalUser(
-  id:          CustomerIdentifier,
-  email:       Option[String],
-  nino:        Option[String],
-  userDetails: Any,
-  enrolments:  Enrolments
+final case class CustomerIdentifier(
+  provider:   IdentityProvider,
+  providerId: String
 )
+
+object CustomerIdentifier {
+  given Format[CustomerIdentifier] = Json.format[CustomerIdentifier]
+}

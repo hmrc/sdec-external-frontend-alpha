@@ -16,12 +16,8 @@
 
 package models.sdec
 
-import uk.gov.hmrc.auth.core.Enrolments
-
-final case class ExternalUser(
-  id:          CustomerIdentifier,
-  email:       Option[String],
-  nino:        Option[String],
-  userDetails: Any,
-  enrolments:  Enrolments
-)
+enum AccessDecision {
+  case Granted
+  case Denied
+  case Link(customerId: CustomerIdentifier)
+}

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package models.sdec
+package models.requests
 
-import uk.gov.hmrc.auth.core.Enrolments
+import models.sdec.ExternalUser
+import play.api.mvc.{Request, WrappedRequest}
 
-final case class ExternalUser(
-  id:          CustomerIdentifier,
-  email:       Option[String],
-  nino:        Option[String],
-  userDetails: Any,
-  enrolments:  Enrolments
-)
+final case class ExternalUserRequest[A](
+  request:      Request[A],
+  externalUser: ExternalUser
+) extends WrappedRequest[A](request)

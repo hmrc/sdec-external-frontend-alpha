@@ -16,12 +16,12 @@
 
 package models.sdec
 
-import uk.gov.hmrc.auth.core.Enrolments
-
-final case class ExternalUser(
-  id:          CustomerIdentifier,
-  email:       Option[String],
-  nino:        Option[String],
-  userDetails: Any,
-  enrolments:  Enrolments
+final case class UnlinkedExternalUser(
+  email:        Option[String],
+  nino:         Option[String],
+  enrolmentKey: Option[String]
 )
+
+object UnlinkedExternalUser {
+  val empty: UnlinkedExternalUser = UnlinkedExternalUser(None, None, None)
+}

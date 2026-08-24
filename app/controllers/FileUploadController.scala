@@ -30,10 +30,10 @@ import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.ExecutionContext
 
 class FileUploadController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    fileUploaderView: FileUploaderView,
-    fileUploadedView: FileUploaded
+  val controllerComponents: MessagesControllerComponents,
+  identify:                 IdentifierAction,
+  fileUploaderView:         FileUploaderView,
+  fileUploadedView:         FileUploaded
 )(using ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -44,7 +44,7 @@ class FileUploadController @Inject() (
     Ok(fileUploaderView())
   }
 
-  def upload(mode: Mode): Action[MultipartFormData[TemporaryFile]] = {
+  def upload(mode: Mode): Action[MultipartFormData[TemporaryFile]] =
     identify(parse.multipartFormData) { implicit request =>
       request.body.file("fileUpload1") match {
         case Some(filePart) =>
@@ -73,11 +73,10 @@ class FileUploadController @Inject() (
           BadRequest(fileUploaderView())
       }
     }
-  }
 
-  def uploadFiles(mode: Mode): Action[MultipartFormData[TemporaryFile]] = {
+  def uploadFiles(mode: Mode): Action[MultipartFormData[TemporaryFile]] =
     identify(parse.multipartFormData) { implicit request =>
-      if (request.body.files.isEmpty) {
+      if request.body.files.isEmpty then {
         BadRequest(fileUploaderView())
       } else {
         val uploadDir     = getUploadLocation()
@@ -94,7 +93,6 @@ class FileUploadController @Inject() (
         Ok(fileUploadedView(uploadedFiles))
       }
     }
-  }
 
   private def getUploadLocation(): Path = {
     val uploadDir: Path =

@@ -42,15 +42,13 @@ lazy val microservice = (project in file("."))
       "-Wconf:cat=deprecation:ws,cat=feature:ws,cat=optimizer:ws,src=target/.*:s"
     ),
     libraryDependencies ++= AppDependencies(),
-    retrieveManaged             := true,
-    pipelineStages              := Seq(digest),
-    Assets / pipelineStages     := Seq(concat),
+    retrieveManaged := true,
+    pipelineStages := Seq(digest),
+    Assets / pipelineStages := Seq(concat),
     Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile    := true,
+    Test / scalafmtOnCompile := true,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    Test / unmanagedSourceDirectories := (Test / baseDirectory)(base =>
-      Seq(base / "test", base / "test-common")
-    ).value,
+    Test / unmanagedSourceDirectories := (Test / baseDirectory)(base => Seq(base / "test", base / "test-common")).value,
     Test / unmanagedResourceDirectories := Seq(
       baseDirectory.value / "test-resources"
     ),
@@ -60,7 +58,7 @@ lazy val microservice = (project in file("."))
   )
   .settings(CodeCoverageSettings.settings: _*)
 
-lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+lazy val testSettings: Seq[Def.Setting[?]] = Seq(
   fork := true,
   unmanagedSourceDirectories += baseDirectory.value / "test-utils"
 )

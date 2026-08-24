@@ -19,8 +19,8 @@ package models
 import java.nio.file.Path
 
 case class UploadedFile(
-    filename: String,
-    contentType: Option[String],
-    size: Long,
-    location: Path
+  filename:    String,
+  contentType: Option[String],
+  size:        Long,
+  location:    Path
 )

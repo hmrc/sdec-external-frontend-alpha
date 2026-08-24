@@ -21,13 +21,13 @@ import play.api.libs.json.{Format, Json}
 import java.time.{LocalDate, LocalDateTime}
 
 case class ThreadReference(
-    id: String,
-    threadReference: String,
-    status: ThreadStatus,
-    createdTimeStamp: LocalDateTime,
-    lastUpdatedTimeStamp: LocalDateTime,
-    threadExpiryDate: LocalDate,
-    associatedCaseReference: String
+  id:                      String,
+  threadReference:         String,
+  status:                  ThreadStatus,
+  createdTimeStamp:        LocalDateTime,
+  lastUpdatedTimeStamp:    LocalDateTime,
+  threadExpiryDate:        LocalDate,
+  associatedCaseReference: String
 )
 
 object ThreadReference {

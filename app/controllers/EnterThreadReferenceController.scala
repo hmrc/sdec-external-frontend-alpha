@@ -16,10 +16,11 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
+import controllers.actions.IdentifyExternalUser
 import forms.models.ThreadReferenceForm
 import forms.providers.ThreadReferenceFormProvider
 import models.Mode
+import models.sdec.ExternalUser
 import play.api.Logging
 import play.api.data.Form
 import play.api.http.Status as HttpStatus
@@ -35,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class EnterThreadReferenceController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify:                 IdentifierAction,
+  identifyExternalUser:     IdentifyExternalUser,
   enterThreadReferenceView: EnterThreadReferenceView,
   formProvider:             ThreadReferenceFormProvider,
   threadReferenceView:      ThreadReferenceView,
@@ -50,23 +51,20 @@ class EnterThreadReferenceController @Inject() (
   def onPageLoad(
     mode:                Mode,
     threadReferenceForm: Form[ThreadReferenceForm] = form
-  ): Action[AnyContent] = identify { implicit request =>
-    Ok(enterThreadReferenceView(threadReferenceForm, mode))
+  ): Action[AnyContent] = identifyExternalUser { implicit request =>
+    Ok(enterThreadReferenceView(request.externalUser, threadReferenceForm, mode))
   }
 
-  def onContinue(mode: Mode): Action[AnyContent] =
-    identify.async { implicit request =>
-      val formData = form.bindFromRequest()
-      formData.value
-        .filter(t => formProvider.validateThreadReference(t.reference))
-        .fold(
-          Future.successful(returnBadRequest(formData, mode))
-        ) { tr =>
-          getThreadInformation(formData, mode, tr)
-        }
-    }
+  def onContinue(mode: Mode): Action[AnyContent] = identifyExternalUser.async { implicit request =>
+    val externalUser = request.externalUser
+    val formData     = form.bindFromRequest()
+    formData.value
+      .filter(t => formProvider.validateThreadReference(t.reference))
+      .fold(Future.successful(returnBadRequest(externalUser, formData, mode)))(tr => getThreadInformation(externalUser, formData, mode, tr))
+  }
 
   private def getThreadInformation(
+    user:   ExternalUser,
     form:   Form[ThreadReferenceForm],
     mode:   Mode,
     trForm: ThreadReferenceForm
@@ -81,26 +79,54 @@ class EnterThreadReferenceController @Inject() (
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.notfound"))
           logger.warn(s"Thread Reference Not found: ${trForm.reference}")
-          NotFound(enterThreadReferenceView(formWithError, mode))
+          NotFound(
+            enterThreadReferenceView(
+              user: ExternalUser,
+              formWithError,
+              mode
+            )
+          )
         case e: UpstreamErrorResponse if e.statusCode == HttpStatus.NOT_FOUND =>
           logger.warn(s"Thread Reference Not found: ${trForm.reference}")
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.notfound"))
-          NotFound(enterThreadReferenceView(formWithError, mode))
+          NotFound(
+            enterThreadReferenceView(
+              user: ExternalUser,
+              formWithError,
+              mode
+            )
+          )
         case ex =>
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.error"))
           logger.error("Failed to retrieve thread information", ex)
-          ServiceUnavailable(enterThreadReferenceView(formWithError, mode))
+          ServiceUnavailable(
+            enterThreadReferenceView(
+              user: ExternalUser,
+              formWithError,
+              mode
+            )
+          )
       }
 
-  private def returnBadRequest(form: Form[ThreadReferenceForm], mode: Mode)(using
+  private def returnBadRequest(
+    user: ExternalUser,
+    form: Form[ThreadReferenceForm],
+    mode: Mode
+  )(using
     request: Request[?]
   ): Result = {
     logger.warn(s"Returning bad request for ${form.value}")
     val formWithError =
       form.withGlobalError(Messages("sdec.enterthreadref.error.problem.message"))
-    BadRequest(enterThreadReferenceView(formWithError, mode))
+    BadRequest(
+      enterThreadReferenceView(
+        user: ExternalUser,
+        formWithError,
+        mode
+      )
+    )
   }
 
 }

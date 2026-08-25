@@ -18,6 +18,7 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.*
+import controllers.actions.{IdentifyExternalUser, IdentifyExternalUserAction}
 import service.ipaas.HipFileHandlerAlgebra
 import service.stub.HipFileHandlerStub
 import service.{ThreadReferenceService, ThreadReferenceServiceAlgebra}
@@ -38,6 +39,11 @@ class Module extends AbstractModule {
     // For session based storage instead of cred based, change to SessionIdentifierAction
     bind(classOf[IdentifierAction])
       .to(classOf[AuthenticatedIdentifierAction])
+      .asEagerSingleton()
+
+    // External customer identification (GG + One Login)
+    bind(classOf[IdentifyExternalUser])
+      .to(classOf[IdentifyExternalUserAction])
       .asEagerSingleton()
 
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))

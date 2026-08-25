@@ -43,7 +43,7 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
-unauthorised.guidance = This service can only be accessed after you have logged in using Government Gateway
+unauthorised.guidance = This service can only be accessed after you have logged in using Government Gateway or GOV.UK One Login
 
 sdec.button.continue = Continue
 sdec.page.title = Share Files Securely with HMRC

@@ -45,18 +45,9 @@ class ThreadViewController @Inject() (
       threadReferenceService
         .checkThreadReference(threadId)
         .map(thread => Ok(threadView(thread)))
-        .recover {
-          case _: NotFoundException =>
-            logger.warn(s"Thread $threadId not found")
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
-
-          case e: UpstreamErrorResponse if e.statusCode == HttpStatus.NOT_FOUND =>
-            logger.warn(s"Thread $threadId not found")
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
-
-          case ex =>
-            logger.error(s"Failed to retrieve thread $threadId", ex)
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
+        .recover { case exception =>
+          logger.error("Failed to load thread", exception)
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
     }
 }

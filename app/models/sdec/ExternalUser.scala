@@ -23,4 +23,4 @@ final case class ExternalUser(
   email:      Option[String],
   nino:       Option[String],
   enrolments: Enrolments
-) {}
+)

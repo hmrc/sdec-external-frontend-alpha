@@ -18,11 +18,9 @@ package controllers
 
 import controllers.actions.IdentifyExternalUser
 import play.api.Logging
-import play.api.http.Status as HttpStatus
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
 import service.ThreadReferenceServiceAlgebra
-import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ThreadView
 
@@ -40,14 +38,14 @@ class ThreadViewController @Inject() (
     with Logging {
 
   def onPageLoad(threadId: String): Action[AnyContent] = identifyExternalUser.async { request =>
-      given Request[AnyContent] = request
+    given Request[AnyContent] = request
 
-      threadReferenceService
-        .checkThreadReference(threadId)
-        .map(thread => Ok(threadView(thread)))
-        .recover { case exception =>
-          logger.error("Failed to load thread", exception)
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-        }
-    }
+    threadReferenceService
+      .checkThreadReference(threadId)
+      .map(thread => Ok(threadView(thread)))
+      .recover { case exception =>
+        logger.error("Failed to load thread", exception)
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+      }
+  }
 }

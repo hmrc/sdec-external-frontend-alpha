@@ -17,9 +17,8 @@
 package controllers
 
 import base.SpecBase
-import models.{ThreadReference, ThreadStatus, UserAnswers}
+import models.{ThreadReference, ThreadStatus}
 import org.jsoup.Jsoup
-import pages.ThreadReferencePage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -34,19 +33,18 @@ class ThreadViewControllerSpec extends SpecBase {
   given HeaderCarrier    = HeaderCarrier()
   given ExecutionContext = ExecutionContext.global
 
+  private val threadId = "THREAD1000AA"
+
   private val thread = ThreadReference(
-    id = "THREAD1000AA",
+    id = threadId,
     recipientName = Some("Jenny Worthy"),
-    message = Some("Dear Jenny\n\nPlease reply."),
+    message = Some("message"),
     status = ThreadStatus.Active,
     createdTimeStamp = Some(LocalDateTime.now()),
     lastUpdatedTimeStamp = LocalDateTime.now(),
     threadExpiryDate = LocalDate.now().plusDays(28),
     associatedCaseReference = "CASE-001"
   )
-
-  private val userAnswers: UserAnswers =
-    emptyUserAnswers.set(ThreadReferencePage, "THREAD1000AA").success.value
 
   private def serviceReturning(result: Future[ThreadReference]) =
     new ThreadReferenceServiceAlgebra {
@@ -56,7 +54,7 @@ class ThreadViewControllerSpec extends SpecBase {
       ): Future[ThreadReference] = result
     }
 
-  private def request = FakeRequest(GET, routes.ThreadViewController.onPageLoad().url)
+  private def request = FakeRequest(GET, routes.ThreadViewController.onPageLoad(threadId).url)
 
   "ThreadViewController" - {
 
@@ -65,7 +63,7 @@ class ThreadViewControllerSpec extends SpecBase {
       "must return OK and render the thread details" in {
 
         val application =
-          applicationBuilder(userAnswers = Some(userAnswers))
+          applicationBuilder()
             .overrides(
               bind[ThreadReferenceServiceAlgebra]
                 .toInstance(serviceReturning(Future.successful(thread)))
@@ -81,27 +79,14 @@ class ThreadViewControllerSpec extends SpecBase {
           val document = Jsoup.parse(contentAsString(result))
 
           document.select("h1").text() mustBe "Jenny Worthy"
-          document.select(".govuk-caption-l").text() must include("THREAD1000AA")
-        }
-      }
-
-      "must redirect to journey recovery when there is no thread reference in session" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-        running(application) {
-
-          val result = route(application, request).value
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
+          document.select(".govuk-caption-l").text() must include(threadId)
         }
       }
 
       "must redirect to journey recovery when the thread is not found" in {
 
         val application =
-          applicationBuilder(userAnswers = Some(userAnswers))
+          applicationBuilder()
             .overrides(
               bind[ThreadReferenceServiceAlgebra]
                 .toInstance(serviceReturning(Future.failed(new NotFoundException("not found"))))

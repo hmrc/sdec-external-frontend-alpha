@@ -47,10 +47,6 @@ trait SpecBase extends AnyFreeSpec with Matchers with TryValues with OptionValue
         bind[IdentifyExternalUser].to[FakeIdentifyExternalUser],
         bind[DataRetrievalAction].toInstance(
           new FakeDataRetrievalAction(userAnswers)
-        ),
-        bind[ExternalDataRequiredAction].to[ExternalDataRequiredActionImpl],
-        bind[ExternalDataRetrievalAction].toInstance(
-          new FakeExternalDataRetrievalAction(userAnswers)
         )
       )
 }

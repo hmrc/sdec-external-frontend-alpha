@@ -169,7 +169,7 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.ThreadViewController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.ThreadViewController.onPageLoad("ABC123DEF456").url
         }
       }
 

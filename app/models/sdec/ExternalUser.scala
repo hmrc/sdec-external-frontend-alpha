@@ -23,6 +23,4 @@ final case class ExternalUser(
   email:      Option[String],
   nino:       Option[String],
   enrolments: Enrolments
-) {
-  val cacheKey: String = s"${id.provider.providerType}~${id.providerId}"
-}
+) {}

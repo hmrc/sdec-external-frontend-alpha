@@ -19,15 +19,13 @@ package controllers
 import controllers.actions.IdentifyExternalUser
 import forms.models.ThreadReferenceForm
 import forms.providers.ThreadReferenceFormProvider
+import models.Mode
 import models.sdec.ExternalUser
-import models.{Mode, UserAnswers}
-import pages.ThreadReferencePage
 import play.api.Logging
 import play.api.data.Form
 import play.api.http.Status as HttpStatus
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.*
-import repositories.SessionRepository
 import service.ThreadReferenceServiceAlgebra
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -41,7 +39,6 @@ class EnterThreadReferenceController @Inject() (
   identifyExternalUser:     IdentifyExternalUser,
   enterThreadReferenceView: EnterThreadReferenceView,
   formProvider:             ThreadReferenceFormProvider,
-  sessionRepository:        SessionRepository,
   threadReferenceService:   ThreadReferenceServiceAlgebra
 )(using ec: ExecutionContext)
     extends FrontendBaseController
@@ -76,13 +73,8 @@ class EnterThreadReferenceController @Inject() (
   )(using Request[?]): Future[Result] =
     threadReferenceService
       .checkThreadReference(trForm.reference)
-      .flatMap { _ =>
-        for {
-          existing <- sessionRepository.get(user.cacheKey)
-          answers = existing.getOrElse(UserAnswers(user.cacheKey))
-          updated <- Future.fromTry(answers.set(ThreadReferencePage, trForm.reference))
-          _       <- sessionRepository.set(updated)
-        } yield Redirect(routes.ThreadViewController.onPageLoad())
+      .map { _ =>
+        Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
       }
       .recover {
         case _: NotFoundException =>

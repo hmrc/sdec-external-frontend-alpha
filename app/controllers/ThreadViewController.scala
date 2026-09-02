@@ -16,8 +16,7 @@
 
 package controllers
 
-import controllers.actions.{ExternalDataRequiredAction, ExternalDataRetrievalAction, IdentifyExternalUser}
-import pages.ThreadReferencePage
+import controllers.actions.IdentifyExternalUser
 import play.api.Logging
 import play.api.http.Status as HttpStatus
 import play.api.i18n.I18nSupport
@@ -28,13 +27,11 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ThreadView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class ThreadViewController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identifyExternalUser:     IdentifyExternalUser,
-  getData:                  ExternalDataRetrievalAction,
-  requireData:              ExternalDataRequiredAction,
   threadReferenceService:   ThreadReferenceServiceAlgebra,
   threadView:               ThreadView
 )(using ec: ExecutionContext)
@@ -42,32 +39,25 @@ class ThreadViewController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] =
-    (identifyExternalUser andThen getData andThen requireData).async { implicit request =>
-      request.userAnswers.get(ThreadReferencePage) match {
-        case None =>
-          logger.warn("No validated thread reference in session, restarting journey")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  def onPageLoad(threadId: String): Action[AnyContent] =
+    identifyExternalUser.async { request =>
+      given Request[AnyContent] = request
 
-        case Some(threadId) =>
-          // TODO: ThreadAccessPolicy check belongs here, once the API returns the
-          // thread's UnlinkedExternalUser claim and we persist the linked customer.
-          threadReferenceService
-            .checkThreadReference(threadId)
-            .map(thread => Ok(threadView(thread)))
-            .recover {
-              case _: NotFoundException =>
-                logger.warn(s"Thread $threadId not found on re-fetch")
-                Redirect(routes.JourneyRecoveryController.onPageLoad())
+      threadReferenceService
+        .checkThreadReference(threadId)
+        .map(thread => Ok(threadView(thread)))
+        .recover {
+          case _: NotFoundException =>
+            logger.warn(s"Thread $threadId not found")
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
 
-              case e: UpstreamErrorResponse if e.statusCode == HttpStatus.NOT_FOUND =>
-                logger.warn(s"Thread $threadId not found on re-fetch")
-                Redirect(routes.JourneyRecoveryController.onPageLoad())
+          case e: UpstreamErrorResponse if e.statusCode == HttpStatus.NOT_FOUND =>
+            logger.warn(s"Thread $threadId not found")
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
 
-              case ex =>
-                logger.error(s"Failed to retrieve thread $threadId", ex)
-                Redirect(routes.JourneyRecoveryController.onPageLoad())
-            }
-      }
+          case ex =>
+            logger.error(s"Failed to retrieve thread $threadId", ex)
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
+        }
     }
 }

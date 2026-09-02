@@ -25,5 +25,5 @@ GET         /file-upload                                 controllers.FileUploadC
 POST        /file-upload                                 controllers.FileUploadController.upload(mode: Mode = NormalMode)
 POST        /files-upload                                controllers.FileUploadController.uploadFiles(mode: Mode = NormalMode)
 
-GET         /thread                                      controllers.ThreadViewController.onPageLoad()
+GET         /thread/:threadId                            controllers.ThreadViewController.onPageLoad(threadId: String)
 GET         /development-in-progress                     controllers.DevelopmentInProgressController.onPageLoad()

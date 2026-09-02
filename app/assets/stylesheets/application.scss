@@ -9,3 +9,21 @@
 .js-enabled .js-visible {
   display: inline-block !important;
 }
+
+.hmrc-timeline__event-title,
+.hmrc-timeline__event-title__user {
+  display: inline;
+}
+
+.hmrc-timeline__event-title__user {
+  margin-bottom: 0;
+}
+
+.hmrc-timeline .govuk-tag {
+  max-width: fit-content;
+}
+
+.preserve-message-formatting {
+  white-space: pre-line;
+  margin-bottom: 0;
+}

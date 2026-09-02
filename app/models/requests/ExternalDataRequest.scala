@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package models
+package models.requests
 
-import play.api.libs.json.{Format, Json}
+import models.UserAnswers
+import models.sdec.ExternalUser
+import play.api.mvc.{Request, WrappedRequest}
 
-import java.time.{LocalDate, LocalDateTime}
+final case class OptionalExternalDataRequest[A](
+  request:      Request[A],
+  externalUser: ExternalUser,
+  userAnswers:  Option[UserAnswers]
+) extends WrappedRequest[A](request)
 
-case class ThreadReference(
-  id:                      String,
-  recipientName:           Option[String],
-  status:                  ThreadStatus,
-  createdTimeStamp:        Option[LocalDateTime],
-  message:                 Option[String],
-  lastUpdatedTimeStamp:    LocalDateTime,
-  threadExpiryDate:        LocalDate,
-  associatedCaseReference: String
-)
-
-object ThreadReference {
-  implicit val format: Format[ThreadReference] = Json.format[ThreadReference]
-}
+final case class ExternalDataRequest[A](
+  request:      Request[A],
+  externalUser: ExternalUser,
+  userAnswers:  UserAnswers
+) extends WrappedRequest[A](request)

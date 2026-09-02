@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-import play.api.libs.json.{Format, Json}
+@this(layout: templates.Layout, govukPanel: GovukPanel)
 
-import java.time.{LocalDate, LocalDateTime}
+@()(implicit request: Request[_], messages: Messages)
 
-case class ThreadReference(
-  id:                      String,
-  recipientName:           Option[String],
-  status:                  ThreadStatus,
-  createdTimeStamp:        Option[LocalDateTime],
-  message:                 Option[String],
-  lastUpdatedTimeStamp:    LocalDateTime,
-  threadExpiryDate:        LocalDate,
-  associatedCaseReference: String
-)
+@layout(
+    pageTitle = titleNoForm(messages("devInProgress.title"))
+) {
 
-object ThreadReference {
-  implicit val format: Format[ThreadReference] = Json.format[ThreadReference]
+    @govukPanel(Panel(
+        title = Text(messages("devInProgress.heading"))
+    ))
 }

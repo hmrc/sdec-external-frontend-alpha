@@ -19,9 +19,10 @@ package models.sdec
 import uk.gov.hmrc.auth.core.Enrolments
 
 final case class ExternalUser(
-  id:          CustomerIdentifier,
-  email:       Option[String],
-  nino:        Option[String],
-  userDetails: Any,
-  enrolments:  Enrolments
-)
+  id:         CustomerIdentifier,
+  email:      Option[String],
+  nino:       Option[String],
+  enrolments: Enrolments
+) {
+  val cacheKey: String = s"${id.provider.providerType}~${id.providerId}"
+}

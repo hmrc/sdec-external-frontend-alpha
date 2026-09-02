@@ -119,13 +119,14 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
         }
       }
 
-      "must return OK when a valid thread reference is submitted" in {
+      "must redirect to the thread view when a valid thread reference is submitted" in {
 
         val threadReference = models.ThreadReference(
           id = "1",
-          threadReference = "ABC123DEF456",
+          recipientName = Some("someName"),
+          message = Some("someMessage"),
           status = ThreadStatus.Active,
-          createdTimeStamp = LocalDateTime.now(),
+          createdTimeStamp = Some(LocalDateTime.now),
           lastUpdatedTimeStamp = LocalDateTime.now(),
           threadExpiryDate = LocalDate.now(),
           associatedCaseReference = "CASE123"
@@ -167,7 +168,8 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
 
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.ThreadViewController.onPageLoad().url
         }
       }
 

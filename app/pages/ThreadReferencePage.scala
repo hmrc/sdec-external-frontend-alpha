@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package models
+package pages
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.JsPath
 
-import java.time.{LocalDate, LocalDateTime}
+case object ThreadReferencePage extends QuestionPage[String] {
 
-case class ThreadReference(
-  id:                      String,
-  recipientName:           Option[String],
-  status:                  ThreadStatus,
-  createdTimeStamp:        Option[LocalDateTime],
-  message:                 Option[String],
-  lastUpdatedTimeStamp:    LocalDateTime,
-  threadExpiryDate:        LocalDate,
-  associatedCaseReference: String
-)
+  override def path: JsPath = JsPath \ "threadReference"
 
-object ThreadReference {
-  implicit val format: Format[ThreadReference] = Json.format[ThreadReference]
 }

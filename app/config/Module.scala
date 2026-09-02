@@ -35,6 +35,12 @@ class Module extends AbstractModule {
     bind(classOf[DataRequiredAction])
       .to(classOf[DataRequiredActionImpl])
       .asEagerSingleton()
+    bind(classOf[ExternalDataRetrievalAction])
+      .to(classOf[ExternalDataRetrievalActionImpl])
+      .asEagerSingleton()
+    bind(classOf[ExternalDataRequiredAction])
+      .to(classOf[ExternalDataRequiredActionImpl])
+      .asEagerSingleton()
 
     // For session based storage instead of cred based, change to SessionIdentifierAction
     bind(classOf[IdentifierAction])

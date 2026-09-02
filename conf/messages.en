@@ -66,3 +66,21 @@ sdec.enterthreadref.api.error = There was a problem getting thread reference inf
 file.uploaded.title = File uploaded
 file.upload.file = Upload Single File
 file.upload.files = Upload One or More Files
+
+threadview.title = Thread details
+threadview.caption = Thread reference number: {0}
+threadview.timeline.heading = Timeline
+threadview.timeline.submitted = Message sent
+threadview.timeline.by = by HMRC
+threadview.name.unavailable = Name not available
+threadview.message.unavailable = Message not available
+threadview.button.reply = Reply
+
+threadview.inset.draft = HMRC has not sent this request yet.
+threadview.inset.awaitingReply = HMRC is waiting for your reply.
+threadview.inset.closed = This thread is closed. You can still view it, but you cannot reply.
+threadview.inset.archived = This thread has been archived.
+
+devInProgress.title = Development in progress
+devInProgress.heading = Development in progress
+devInProgress.guidance = This part of the service has not been built yet.

@@ -39,8 +39,7 @@ class ThreadViewController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(threadId: String): Action[AnyContent] =
-    identifyExternalUser.async { request =>
+  def onPageLoad(threadId: String): Action[AnyContent] = identifyExternalUser.async { request =>
       given Request[AnyContent] = request
 
       threadReferenceService

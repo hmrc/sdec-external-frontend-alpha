@@ -16,27 +16,15 @@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(
-        layout: templates.Layout,
-        govukButton: GovukButton
-)
+@this(layout: templates.Layout, govukPanel: GovukPanel)
 
 @()(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = titleNoForm(messages("sdec.page.title")),
-    showBackLink = false
+    pageTitle = titleNoForm(messages("devInProgress.title"))
 ) {
 
-    <h1 class="govuk-heading-l">@messages("sdec.page.heading")</h1>
-
-    @govukButton(Button(
-        href = Some(routes.EnterThreadReferenceController.onPageLoad().url),
-        content = Text(messages("sdec.index.enterthread"))
+    @govukPanel(Panel(
+        title = Text(messages("devInProgress.heading"))
     ))
-
-  @govukButton(Button(
-      href = Some(routes.FileUploadController.onPageLoad().url),
-      content = Text(messages("sdec.index.button.upload"))
-  ))
 }

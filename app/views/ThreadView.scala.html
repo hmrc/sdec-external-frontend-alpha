@@ -1,0 +1,81 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import models.ThreadReference
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import viewmodels.thread.ThreadSummaryViewModel
+
+@this(layout: templates.Layout, govukInsetText: GovukInsetText, govukButton: GovukButton)
+
+@(thread: ThreadReference)(implicit request: Request[_], messages: Messages)
+
+@layout(
+    pageTitle = titleNoForm(messages("threadview.title")),
+    showBackLink = false
+) {
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+            <span class="govuk-caption-l" style="white-space: nowrap;">@messages("threadview.caption", ThreadSummaryViewModel.referenceOrUnavailable(thread))</span>
+
+            <h1 class="govuk-heading-l">@ThreadSummaryViewModel.nameOrUnavailable(thread)</h1>
+
+            @govukInsetText(InsetText(
+                content = HtmlContent(
+                    s"""<span role="status" aria-live="polite" aria-atomic="true">${messages(ThreadSummaryViewModel.insetKey(thread))}</span>"""
+                )
+            ))
+
+            <h2 class="govuk-heading-m">@messages("threadview.timeline.heading")</h2>
+
+            <ol class="hmrc-timeline">
+                <li class="hmrc-timeline__event">
+                    <h2 class="hmrc-timeline__event-title">
+                        @messages("threadview.timeline.submitted")
+                        <span class="govuk-!-font-size-19 govuk-!-font-weight-regular">@messages("threadview.timeline.by")</span>
+                    </h2>
+
+                    @thread.createdTimeStamp.map { submitted =>
+                    <time class="hmrc-timeline__event-meta" datetime="@submitted.toString">
+                    @ThreadSummaryViewModel.formatDateTime(submitted)
+                    </time>
+                    }.getOrElse {
+                        <p class="hmrc-timeline__event-meta">@messages("threadview.unavailable")</p>
+                    }
+
+                    @thread.message.map { body =>
+                        <div class="hmrc-timeline__event-content">
+                            @for(paragraph <- body.split("\n").map(_.trim).filter(_.nonEmpty)) {
+                                <p class="govuk-body">@paragraph</p>
+                            }
+                        </div>
+                    }.getOrElse {
+                        <p class="hmrc-timeline__event-meta">@messages("threadview.message.unavailable")</p>
+                    }
+                </li>
+            </ol>
+
+            @if(ThreadSummaryViewModel.canReply(thread)) {
+                @govukButton(Button(
+                    href = Some(routes.DevelopmentInProgressController.onPageLoad().url),
+                    content = Text(messages("threadview.button.reply"))
+                ))
+            }
+
+        </div>
+    </div>
+}

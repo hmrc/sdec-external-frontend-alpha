@@ -29,7 +29,7 @@ import play.api.mvc.*
 import service.ThreadReferenceServiceAlgebra
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{EnterThreadReferenceView, ThreadReferenceView}
+import views.html.EnterThreadReferenceView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +39,6 @@ class EnterThreadReferenceController @Inject() (
   identifyExternalUser:     IdentifyExternalUser,
   enterThreadReferenceView: EnterThreadReferenceView,
   formProvider:             ThreadReferenceFormProvider,
-  threadReferenceView:      ThreadReferenceView,
   threadReferenceService:   ThreadReferenceServiceAlgebra
 )(using ec: ExecutionContext)
     extends FrontendBaseController
@@ -51,11 +50,14 @@ class EnterThreadReferenceController @Inject() (
   def onPageLoad(
     mode:                Mode,
     threadReferenceForm: Form[ThreadReferenceForm] = form
-  ): Action[AnyContent] = identifyExternalUser { implicit request =>
+  ): Action[AnyContent] = identifyExternalUser { request =>
+    given Request[AnyContent] = request
     Ok(enterThreadReferenceView(request.externalUser, threadReferenceForm, mode))
   }
 
-  def onContinue(mode: Mode): Action[AnyContent] = identifyExternalUser.async { implicit request =>
+  def onContinue(mode: Mode): Action[AnyContent] = identifyExternalUser.async { request =>
+    given Request[AnyContent] = request
+
     val externalUser = request.externalUser
     val formData     = form.bindFromRequest()
     formData.value
@@ -71,8 +73,8 @@ class EnterThreadReferenceController @Inject() (
   )(using Request[?]): Future[Result] =
     threadReferenceService
       .checkThreadReference(trForm.reference)
-      .map { thread =>
-        Ok(threadReferenceView(mode, ThreadReferenceForm(thread.threadReference)))
+      .map { _ =>
+        Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
       }
       .recover {
         case _: NotFoundException =>

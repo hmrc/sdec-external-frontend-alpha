@@ -34,7 +34,6 @@ class FakeIdentifyExternalUser @Inject() (bodyParsers: BodyParsers.Default)(impl
     id = CustomerIdentifier(IdentityProvider.OneLogin, "stub-sub"),
     email = Some("johndoe@example.com"),
     nino = Some("AA000000A"),
-    userDetails = None,
     enrolments = Enrolments(Set.empty)
   )
 

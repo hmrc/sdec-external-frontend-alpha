@@ -77,7 +77,6 @@ class IdentifyExternalUserAction @Inject() (
               id = id,
               email = email,
               nino = nino,
-              userDetails = None,
               enrolments = enrolments
             )
             block(ExternalUserRequest(request, user))

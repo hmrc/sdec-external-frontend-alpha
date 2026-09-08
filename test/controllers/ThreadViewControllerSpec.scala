@@ -89,7 +89,7 @@ class ThreadViewControllerSpec extends SpecBase {
 
           val document = Jsoup.parse(contentAsString(result))
 
-          document.select("h1").text() mustBe "Jenny Worthy"
+          document.select("h1").text() mustBe "John Smith"
           document.select(".govuk-caption-l").text() must include(threadId)
         }
       }

@@ -16,8 +16,8 @@
 
 package models
 
-import play.api.libs.json.{Format, Json}
 import models.{RecipientDetails, ThreadDetails}
+import play.api.libs.json.{Format, Json}
 
 import java.time.{LocalDate, LocalDateTime}
 

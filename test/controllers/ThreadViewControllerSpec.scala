@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import models.{ThreadReference, ThreadStatus}
+import models.*
 import org.jsoup.Jsoup
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -36,14 +36,25 @@ class ThreadViewControllerSpec extends SpecBase {
   private val threadId = "THREAD1000AA"
 
   private val thread = ThreadReference(
-    id = threadId,
-    recipientName = Some("Jenny Worthy"),
-    message = Some("message"),
+    id = "THREAD2000AA",
     status = ThreadStatus.Active,
-    createdTimeStamp = Some(LocalDateTime.now()),
-    lastUpdatedTimeStamp = LocalDateTime.now(),
+    createdTimeStamp = LocalDateTime.now().minusDays(2),
+    lastUpdatedTimeStamp = LocalDateTime.now().minusHours(3),
     threadExpiryDate = LocalDate.now().plusDays(28),
-    associatedCaseReference = "CASE-001"
+    associatedCaseReference = "CASE-001",
+    recipientDetails = RecipientDetails(
+      firstName = "John",
+      lastName = "Smith",
+      email = "JohnS@hotmail.com",
+      phoneNumber = "07123456789",
+      nationalInsuranceNumber = "QQQQQQQQC",
+      hasRelatedCase = false,
+      caseReferenceNumber = None
+    ),
+    threadDetails = ThreadDetails(
+      message = "some message",
+      responseDate = LocalDate.now().plusDays(7)
+    )
   )
 
   private def serviceReturning(result: Future[ThreadReference]) =

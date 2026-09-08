@@ -24,16 +24,25 @@ import java.time.LocalDateTime
 
 object ThreadSummaryViewModel {
 
+  private def fullName(firstName: String, lastName: String): String =
+    s"$firstName $lastName"
+
+  private def orUnavailable(value: String)(using messages: Messages): String =
+    Option(value).map(_.trim).filter(_.nonEmpty).getOrElse(messages("threadview.name.unavailable"))
+
   def formatDateTime(value: LocalDateTime): String = value.toDateAndTimeFormat
 
-  private def orUnavailable(value: Option[String])(using messages: Messages): String =
-    value.map(_.trim).filter(_.nonEmpty).getOrElse(messages("threadview.name.unavailable"))
-
   def referenceOrUnavailable(thread: ThreadReference)(using messages: Messages): String =
-    orUnavailable(Option(thread.id))
+    orUnavailable(thread.id)
 
   def nameOrUnavailable(thread: ThreadReference)(using messages: Messages): String =
-    orUnavailable(thread.recipientName)
+    orUnavailable(fullName(thread.recipientDetails.firstName, thread.recipientDetails.lastName))
+
+  def paragraphsOrUnavailable(thread: ThreadReference)(using messages: Messages): Seq[String] = {
+    val paragraphs = thread.threadDetails.message.split("\n").map(_.trim).filter(_.nonEmpty).toSeq
+    if paragraphs.nonEmpty then paragraphs
+    else Seq(messages("threadview.message.unavailable"))
+  }
 
   def insetKey(thread: ThreadReference): String =
     thread.status match {

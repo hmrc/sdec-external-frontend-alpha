@@ -49,23 +49,15 @@
                         <span class="govuk-!-font-size-19 govuk-!-font-weight-regular">@messages("threadview.timeline.by")</span>
                     </h2>
 
-                    @thread.createdTimeStamp.map { submitted =>
-                    <time class="hmrc-timeline__event-meta" datetime="@submitted.toString">
-                    @ThreadSummaryViewModel.formatDateTime(submitted)
+                    <time class="hmrc-timeline__event-meta" datetime="@thread.createdTimeStamp.toString">
+                    @ThreadSummaryViewModel.formatDateTime(thread.createdTimeStamp)
                     </time>
-                    }.getOrElse {
-                        <p class="hmrc-timeline__event-meta">@messages("threadview.unavailable")</p>
-                    }
 
-                    @thread.message.map { body =>
-                        <div class="hmrc-timeline__event-content">
-                            @for(paragraph <- body.split("\n").map(_.trim).filter(_.nonEmpty)) {
-                                <p class="govuk-body">@paragraph</p>
-                            }
-                        </div>
-                    }.getOrElse {
-                        <p class="hmrc-timeline__event-meta">@messages("threadview.message.unavailable")</p>
+                    <div class="hmrc-timeline__event-content">
+                    @for(paragraph <- ThreadSummaryViewModel.paragraphsOrUnavailable(thread)) {
+                        <p class="govuk-body">@paragraph</p>
                     }
+                    </div>
                 </li>
             </ol>
 

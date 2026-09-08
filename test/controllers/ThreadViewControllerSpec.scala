@@ -45,7 +45,7 @@ class ThreadViewControllerSpec extends SpecBase {
     recipientDetails = RecipientDetails(
       firstName = "John",
       lastName = "Smith",
-      email = "JohnS@hotmail.com",
+      email = "some@email.com",
       phoneNumber = "07123456789",
       nationalInsuranceNumber = "QQQQQQQQC",
       hasRelatedCase = false,

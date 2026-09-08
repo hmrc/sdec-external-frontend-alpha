@@ -36,7 +36,7 @@ class ThreadViewControllerSpec extends SpecBase {
   private val threadId = "THREAD1000AA"
 
   private val thread = ThreadReference(
-    id = "THREAD2000AA",
+    id = "THREAD1000AA",
     status = ThreadStatus.Active,
     createdTimeStamp = LocalDateTime.now().minusDays(2),
     lastUpdatedTimeStamp = LocalDateTime.now().minusHours(3),

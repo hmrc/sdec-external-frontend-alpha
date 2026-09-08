@@ -16,22 +16,18 @@
 
 package models
 
-import play.api.libs.json.{Format, Json}
-import models.{RecipientDetails, ThreadDetails}
+import play.api.libs.json.{Json, OFormat}
 
-import java.time.{LocalDate, LocalDateTime}
-
-case class ThreadReference(
-  id:                      String,
-  status:                  ThreadStatus,
-  createdTimeStamp:        LocalDateTime,
-  lastUpdatedTimeStamp:    LocalDateTime,
-  threadExpiryDate:        LocalDate,
-  associatedCaseReference: String,
-  recipientDetails:        RecipientDetails,
-  threadDetails:           ThreadDetails
+final case class RecipientDetails(
+  firstName:               String,
+  lastName:                String,
+  email:                   String,
+  phoneNumber:             String,
+  nationalInsuranceNumber: String,
+  hasRelatedCase:          Boolean,
+  caseReferenceNumber:     Option[String]
 )
 
-object ThreadReference {
-  given format: Format[ThreadReference] = Json.format[ThreadReference]
+object RecipientDetails {
+  given format: OFormat[RecipientDetails] = Json.format[RecipientDetails]
 }

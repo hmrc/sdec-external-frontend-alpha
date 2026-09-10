@@ -62,7 +62,9 @@ class EnterThreadReferenceController @Inject() (
     val formData     = form.bindFromRequest()
     formData.value
       .filter(t => formProvider.validateThreadReference(t.reference))
-      .fold(Future.successful(returnBadRequest(externalUser, formData, mode)))(tr => getThreadInformation(externalUser, formData, mode, tr))
+      .fold(Future.successful(returnBadRequest(externalUser, formData, mode)))(tr =>
+        getThreadInformation(externalUser, formData, mode, tr)
+      )
   }
 
   private def getThreadInformation(

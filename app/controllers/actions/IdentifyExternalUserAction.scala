@@ -32,7 +32,9 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IdentifyExternalUser extends ActionBuilder[ExternalUserRequest, AnyContent] with ActionFunction[Request, ExternalUserRequest]
+trait IdentifyExternalUser
+    extends ActionBuilder[ExternalUserRequest, AnyContent]
+    with ActionFunction[Request, ExternalUserRequest]
 
 class IdentifyExternalUserAction @Inject() (
   override val authConnector: AuthConnector,

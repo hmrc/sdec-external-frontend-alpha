@@ -54,6 +54,10 @@ object IdentityValidationPolicy {
       case _                  => false
     }
 
-  private def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean =
-    matches(name.flatMap(_.name), Some(s"${recipient.firstName} ${recipient.lastName}"))
+  private def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean = {
+    val fullName = name
+      .map(n => Seq(n.name, n.lastName).flatten.mkString(" "))
+      .getOrElse("")
+    matches(Some(fullName), Some(s"${recipient.firstName} ${recipient.lastName}"))
+  }
 }

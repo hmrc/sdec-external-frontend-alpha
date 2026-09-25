@@ -130,10 +130,10 @@ class EnterThreadReferenceControllerSpec extends SpecBase {
           associatedCaseReference = "CASE-001",
           recipientDetails = RecipientDetails(
             firstName = "John",
-            lastName = "Smith",
-            email = "some@example.com",
+            lastName = "Doe",
+            email = "johndoe@example.com",
             phoneNumber = "07123456789",
-            nationalInsuranceNumber = "QQQQQQQQC",
+            nationalInsuranceNumber = "AA000000A",
             hasRelatedCase = false,
             caseReferenceNumber = None
           ),

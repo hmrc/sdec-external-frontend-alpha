@@ -20,7 +20,10 @@ import com.google.inject.Inject
 import models.requests.ExternalUserRequest
 import models.sdec.{CustomerIdentifier, ExternalUser, IdentityProvider}
 import play.api.mvc.*
+import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core.ConfidenceLevel.L200
 import uk.gov.hmrc.auth.core.Enrolments
+import uk.gov.hmrc.auth.core.retrieve.Name
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,9 +35,12 @@ class FakeIdentifyExternalUser @Inject() (bodyParsers: BodyParsers.Default)(impl
 
   private val stubUser: ExternalUser = ExternalUser(
     id = CustomerIdentifier(IdentityProvider.OneLogin, "stub-sub"),
+    name = Some(Name(Some("John"), Some("Doe"))),
     email = Some("johndoe@example.com"),
     nino = Some("AA000000A"),
-    enrolments = Enrolments(Set.empty)
+    enrolments = Enrolments(Set.empty),
+    affinityGroup = Some(Individual),
+    confidenceLevel = L200
   )
 
   override def invokeBlock[A](

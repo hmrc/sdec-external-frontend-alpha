@@ -20,7 +20,7 @@ import controllers.actions.IdentifyExternalUser
 import forms.models.ThreadReferenceForm
 import forms.providers.ThreadReferenceFormProvider
 import models.Mode
-import models.sdec.ExternalUser
+import models.sdec.{ExternalUser, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.data.Form
 import play.api.http.Status as HttpStatus
@@ -75,8 +75,20 @@ class EnterThreadReferenceController @Inject() (
   )(using Request[?]): Future[Result] =
     threadReferenceService
       .checkThreadReference(trForm.reference)
-      .map { _ =>
-        Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
+      .map { threadReference =>
+        IdentityValidationPolicy.validate(user, threadReference.recipientDetails) match {
+          case Right(()) =>
+            Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
+          case Left(failure) =>
+            logger.error(s"Access denied for thread ${trForm.reference}: $failure")
+            Forbidden(
+              enterThreadReferenceView(
+                user,
+                form.withGlobalError(Messages("sdec.enterthreadref.accessdenied")),
+                mode
+              )
+            )
+        }
       }
       .recover {
         case _: NotFoundException =>

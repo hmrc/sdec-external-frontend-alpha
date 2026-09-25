@@ -40,10 +40,12 @@ class IdentifyExternalUserAction @Inject() (
   override val authConnector: AuthConnector,
   config:                     FrontendAppConfig,
   val parser:                 BodyParsers.Default
-)(implicit val executionContext: ExecutionContext)
+)(using ec: ExecutionContext)
     extends IdentifyExternalUser
     with AuthorisedFunctions
     with Logging {
+
+  override protected def executionContext: ExecutionContext = ExecutionContext.global
 
   override def invokeBlock[A](
     request: Request[A],
@@ -56,10 +58,13 @@ class IdentifyExternalUserAction @Inject() (
     authorised()
       .retrieve(
         Retrievals.credentials and
+          Retrievals.name and
           Retrievals.email and
           Retrievals.nino and
-          Retrievals.authorisedEnrolments
-      ) { case credentials ~ email ~ nino ~ enrolments =>
+          Retrievals.authorisedEnrolments and
+          Retrievals.affinityGroup and
+          Retrievals.confidenceLevel
+      ) { case credentials ~ name ~ email ~ nino ~ enrolments ~ affinityGroup ~ confidenceLevel =>
         val maybeIdentity: Option[CustomerIdentifier] =
           credentials.flatMap { c =>
             IdentityProvider.fromProviderType(c.providerType) match {
@@ -77,9 +82,12 @@ class IdentifyExternalUserAction @Inject() (
           .map { id =>
             val user = ExternalUser(
               id = id,
+              name = name,
               email = email,
               nino = nino,
-              enrolments = enrolments
+              enrolments = enrolments,
+              affinityGroup = affinityGroup,
+              confidenceLevel = confidenceLevel
             )
             block(ExternalUserRequest(request, user))
           }

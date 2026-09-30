@@ -16,11 +16,15 @@
 
 package models.sdec
 
-import uk.gov.hmrc.auth.core.Enrolments
+import uk.gov.hmrc.auth.core.retrieve.Name
+import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, Enrolments}
 
 final case class ExternalUser(
-  id:         CustomerIdentifier,
-  email:      Option[String],
-  nino:       Option[String],
-  enrolments: Enrolments
+  id:              CustomerIdentifier,
+  name:            Option[Name],
+  email:           Option[String],
+  nino:            Option[String],
+  enrolments:      Enrolments,
+  affinityGroup:   Option[AffinityGroup],
+  confidenceLevel: ConfidenceLevel
 )

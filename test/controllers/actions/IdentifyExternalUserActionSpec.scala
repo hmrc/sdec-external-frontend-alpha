@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,12 +54,21 @@ class IdentifyExternalUserActionSpec extends SpecBase {
           new ~(
             new ~(
               new ~(
-                Option(Credentials("sub-123", "ONE_LOGIN")),
-                Option("johndoe@example.com")
+                new ~(
+                  new ~(
+                    new ~(
+                      Option(Credentials("sub-123", "ONE_LOGIN")),
+                      Some(Name(Some("John Doe"), None))
+                    ),
+                    Option("johndoe@example.com")
+                  ),
+                  Option("AA000000A")
+                ),
+                Enrolments(Set.empty)
               ),
-              Option("AA000000A")
+              Some(AffinityGroup.Individual)
             ),
-            Enrolments(Set.empty)
+            ConfidenceLevel.L200
           )
 
         val action = new IdentifyExternalUserAction(
@@ -86,12 +95,21 @@ class IdentifyExternalUserActionSpec extends SpecBase {
           new ~(
             new ~(
               new ~(
-                Option(Credentials("cred-123", "GovernmentGateway")),
-                Option("gg@example.com")
+                new ~(
+                  new ~(
+                    new ~(
+                      Option(Credentials("cred-123", "GovernmentGateway")),
+                      Some(Name(Some("Jane Doe"), None))
+                    ),
+                    Option("gg@example.com")
+                  ),
+                  Option("AA000000A")
+                ),
+                Enrolments(Set.empty)
               ),
-              Option("AA000000A")
+              Some(AffinityGroup.Individual)
             ),
-            Enrolments(Set.empty)
+            ConfidenceLevel.L200
           )
 
         val action = new IdentifyExternalUserAction(
@@ -160,12 +178,21 @@ class IdentifyExternalUserActionSpec extends SpecBase {
           new ~(
             new ~(
               new ~(
-                Option(Credentials("id-1", "SomethingElse")),
-                Option.empty[String]
+                new ~(
+                  new ~(
+                    new ~(
+                      Option(Credentials("id-1", "SomethingElse")),
+                      Some(Name(None, None))
+                    ),
+                    Option.empty[String]
+                  ),
+                  Option.empty[String]
+                ),
+                Enrolments(Set.empty)
               ),
-              Option.empty[String]
+              Option.empty[AffinityGroup]
             ),
-            Enrolments(Set.empty)
+            ConfidenceLevel.L50
           )
 
         val action = new IdentifyExternalUserAction(

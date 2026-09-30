@@ -84,3 +84,5 @@ threadview.inset.archived = This thread has been archived.
 devInProgress.title = Development in progress
 devInProgress.heading = Development in progress
 devInProgress.guidance = This part of the service has not been built yet.
+
+sdec.enterthreadref.accessdenied = We are unable to provide access to this thread at this time. If you believe this is an error or need further assistance, please contact the Support Team for help.

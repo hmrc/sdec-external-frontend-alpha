@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package service
+package connectors
 
-import com.google.inject.Singleton
-import connectors.ThreadReferenceConnector
+import config.FrontendAppConfig
 import models.ThreadReference
-import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ThreadReferenceService @Inject (
-  threadReferenceConnector: ThreadReferenceConnector
-) extends ThreadReferenceServiceAlgebra
-    with Logging {
+class ThreadReferenceConnector @Inject() (
+  httpClient: HttpClientV2,
+  appConfig:  FrontendAppConfig
+)(using ec: ExecutionContext) {
 
-  override def checkThreadReference(
-    threadReference: String
-  )(using hc: HeaderCarrier, ec: ExecutionContext): Future[ThreadReference] =
-    threadReferenceConnector.getThreadReference(threadReference)
-
+  def getThreadReference(threadReference: String)(using HeaderCarrier): Future[ThreadReference] =
+    httpClient
+      .get(url"${appConfig.threadInformationApi}/thread-reference/$threadReference")
+      .execute[ThreadReference]
 }

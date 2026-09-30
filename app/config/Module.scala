@@ -18,7 +18,6 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.*
-import controllers.actions.{IdentifyExternalUser, IdentifyExternalUserAction}
 import service.ipaas.HipFileHandlerAlgebra
 import service.stub.HipFileHandlerStub
 import service.{ThreadReferenceService, ThreadReferenceServiceAlgebra}

@@ -20,7 +20,7 @@ import com.google.inject.AbstractModule
 import controllers.actions.*
 import service.ipaas.HipFileHandlerAlgebra
 import service.stub.HipFileHandlerStub
-import service.{ThreadReferenceService, ThreadReferenceServiceAlgebra}
+import service.{AuditService, AuditServiceAlgebra, ThreadReferenceService, ThreadReferenceServiceAlgebra}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -51,5 +51,8 @@ class Module extends AbstractModule {
     bind(classOf[ThreadReferenceServiceAlgebra])
       .to(classOf[ThreadReferenceService])
     bind(classOf[HipFileHandlerAlgebra]).to(classOf[HipFileHandlerStub])
+
+    // Auditing service
+    bind(classOf[AuditServiceAlgebra]).to(classOf[AuditService])
   }
 }

@@ -20,6 +20,7 @@ import cats.data.{NonEmptyList, Validated}
 import cats.implicits.catsSyntaxTuple5Semigroupal
 import models.RecipientDetails
 import models.sdec.AccessValidationFailure.*
+import play.api.libs.json.{JsString, Writes}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Name
 import utils.SuccessfulResult
@@ -34,18 +35,20 @@ object AccessLevel {
   }
 }
 
-enum AccessLevel:
+enum AccessLevel {
   case NoAccess extends AccessLevel
   case Limited extends AccessLevel
   case Full extends AccessLevel
+}
 
-enum AccessValidationFailure:
+enum AccessValidationFailure {
   case InsufficientConfidence extends AccessValidationFailure
   case EmailMismatch extends AccessValidationFailure
   // The above two are probably the only fields we care about the three below can potentially be removed
   case AffinityMismatch extends AccessValidationFailure
   case NinoMismatch extends AccessValidationFailure
   case NameMismatch extends AccessValidationFailure
+}
 
 object IdentityValidationPolicy {
 
@@ -91,4 +94,5 @@ object IdentityValidationPolicy {
       case Validated.Invalid(e) => Left(e.toList)
     }
   }
+
 }

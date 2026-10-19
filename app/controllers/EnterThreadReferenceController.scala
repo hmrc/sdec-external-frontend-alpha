@@ -21,13 +21,15 @@ import forms.models.ThreadReferenceForm
 import forms.providers.ThreadReferenceFormProvider
 import models.Mode
 import models.sdec.{AccessLevel, ExternalUser, IdentityValidationPolicy}
+import models.audit.ThreadAccessOutcome
+import models.sdec.{ExternalUser, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.data.Form
 import play.api.http.Status as HttpStatus
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.*
-import service.ThreadReferenceServiceAlgebra
-import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
+import service.{AuditServiceAlgebra, ThreadReferenceServiceAlgebra}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{EnterThreadReferenceView, LimitedThreadInterruptionView}
 
@@ -40,7 +42,8 @@ class EnterThreadReferenceController @Inject() (
   enterThreadReferenceView:      EnterThreadReferenceView,
   limitedThreadInterruptionView: LimitedThreadInterruptionView,
   formProvider:                  ThreadReferenceFormProvider,
-  threadReferenceService:        ThreadReferenceServiceAlgebra
+  threadReferenceService:        ThreadReferenceServiceAlgebra,
+  auditService:                  AuditServiceAlgebra
 )(using ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -73,13 +76,14 @@ class EnterThreadReferenceController @Inject() (
     form:   Form[ThreadReferenceForm],
     mode:   Mode,
     trForm: ThreadReferenceForm
-  )(using Request[?]): Future[Result] =
+  )(using request: Request[?], hc: HeaderCarrier): Future[Result] =
     threadReferenceService
       .checkThreadReference(trForm.reference)
       .map { threadReference =>
         IdentityValidationPolicy.validate(user, threadReference.recipientDetails) match {
           case Left(errors) if AccessLevel.fromAccessValidationFailures(errors) == AccessLevel.NoAccess =>
             logger.error(s"Access denied for thread ${trForm.reference}: $errors")
+            auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.Denied, Some(errors))
             Forbidden(
               enterThreadReferenceView(
                 user,
@@ -87,11 +91,14 @@ class EnterThreadReferenceController @Inject() (
                 mode
               )
             )
-          case _ => Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
+          case _ =>
+            auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.Granted, None)
+            Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
         }
       }
       .recover {
         case _: NotFoundException =>
+          auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.NotFound, None)
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.notfound"))
           logger.warn(s"Thread Reference Not found: ${trForm.reference}")
@@ -103,6 +110,7 @@ class EnterThreadReferenceController @Inject() (
             )
           )
         case e: UpstreamErrorResponse if e.statusCode == HttpStatus.NOT_FOUND =>
+          auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.NotFound, None)
           logger.warn(s"Thread Reference Not found: ${trForm.reference}")
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.notfound"))
@@ -114,6 +122,7 @@ class EnterThreadReferenceController @Inject() (
             )
           )
         case ex =>
+          auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.Error, None)
           val formWithError =
             form.withGlobalError(Messages("sdec.enterthreadref.api.error"))
           logger.error("Failed to retrieve thread information", ex)

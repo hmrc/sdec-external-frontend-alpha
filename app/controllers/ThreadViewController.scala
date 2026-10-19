@@ -21,7 +21,7 @@ import models.sdec.IdentityValidationPolicy
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
-import service.ThreadReferenceServiceAlgebra
+import service.{AuditServiceAlgebra, ThreadReferenceServiceAlgebra}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{LimitedThreadInterruptionView, ThreadView}
 
@@ -32,6 +32,7 @@ class ThreadViewController @Inject() (
   val controllerComponents:      MessagesControllerComponents,
   identifyExternalUser:          IdentifyExternalUser,
   threadReferenceService:        ThreadReferenceServiceAlgebra,
+  auditService:                  AuditServiceAlgebra,
   threadView:                    ThreadView,
   limitedThreadInterruptionView: LimitedThreadInterruptionView
 )(using ec: ExecutionContext)
@@ -46,6 +47,7 @@ class ThreadViewController @Inject() (
       .map { thread =>
         IdentityValidationPolicy.validate(request.externalUser, thread.recipientDetails) match {
           case Right(_) =>
+            auditService.auditThreadViewed(request.externalUser, threadId)
             Ok(threadView(thread))
           case Left(_) =>
             Ok(limitedThreadInterruptionView(threadId))

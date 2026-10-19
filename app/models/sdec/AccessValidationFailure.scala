@@ -16,48 +16,79 @@
 
 package models.sdec
 
+import cats.data.{NonEmptyList, Validated}
+import cats.implicits.catsSyntaxTuple5Semigroupal
 import models.RecipientDetails
 import models.sdec.AccessValidationFailure.*
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Name
+import utils.SuccessfulResult
 
-sealed trait AccessValidationFailure
-object AccessValidationFailure {
-  case object AffinityMismatch extends AccessValidationFailure
-  case object InsufficientConfidence extends AccessValidationFailure
-  case object EmailMismatch extends AccessValidationFailure
-  case object NinoMismatch extends AccessValidationFailure
-  case object NameMismatch extends AccessValidationFailure
+object AccessLevel {
+  def fromAccessValidationFailures(failures: List[AccessValidationFailure]): AccessLevel = {
+    val (isLowConfidence, otherFailures) =
+      failures.partition(failure => failure == AccessValidationFailure.InsufficientConfidence)
+    val isEmailMismatch = otherFailures.contains(EmailMismatch)
+    if isLowConfidence.nonEmpty && !isEmailMismatch then Limited
+    else NoAccess
+  }
 }
+
+enum AccessLevel:
+  case NoAccess extends AccessLevel
+  case Limited extends AccessLevel
+  case Full extends AccessLevel
+
+enum AccessValidationFailure:
+  case InsufficientConfidence extends AccessValidationFailure
+  case EmailMismatch extends AccessValidationFailure
+  // The above two are probably the only fields we care about the three below can potentially be removed
+  case AffinityMismatch extends AccessValidationFailure
+  case NinoMismatch extends AccessValidationFailure
+  case NameMismatch extends AccessValidationFailure
 
 object IdentityValidationPolicy {
 
   def validate(
     user:      ExternalUser,
     recipient: RecipientDetails
-  ): Either[AccessValidationFailure, Unit] =
+  ): Either[List[AccessValidationFailure], SuccessfulResult.type] = {
 
-    for {
-      _ <- check(user.affinityGroup.contains(AffinityGroup.Individual), AffinityMismatch)
-      _ <- check(user.confidenceLevel.level >= 200, InsufficientConfidence)
-      _ <- check(matches(user.email, Some(recipient.email)), EmailMismatch)
-      _ <- check(matches(user.nino, Some(recipient.nationalInsuranceNumber)), NinoMismatch)
-      _ <- check(nameMatches(user.name, recipient), NameMismatch)
-    } yield ()
+    def matches(a: Option[String], b: Option[String]): Boolean =
+      a.map(_.toLowerCase.trim) == b.map(_.toLowerCase.trim)
 
-  private def check(cond: Boolean, failure: AccessValidationFailure): Either[AccessValidationFailure, Unit] =
-    if cond then Right(()) else Left(failure)
+    def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean =
+      matches(name.flatMap(_.name), Some(recipient.firstName.trim + " " + recipient.lastName.trim))
 
-  private def matches(a: Option[String], b: Option[String]): Boolean =
-    (a, b) match {
-      case (Some(x), Some(y)) => x.equalsIgnoreCase(y.trim)
-      case _                  => false
+    (
+      Validated.condNel(
+        user.affinityGroup.contains(AffinityGroup.Individual),
+        SuccessfulResult,
+        AffinityMismatch
+      ),
+      Validated.condNel(
+        user.confidenceLevel.level >= 250,
+        SuccessfulResult,
+        InsufficientConfidence
+      ),
+      Validated.condNel(
+        matches(user.email, Some(recipient.email)),
+        SuccessfulResult,
+        EmailMismatch
+      ),
+      Validated.condNel(
+        matches(user.nino, Some(recipient.nationalInsuranceNumber)),
+        SuccessfulResult,
+        NinoMismatch
+      ),
+      Validated.condNel(
+        nameMatches(user.name, recipient),
+        SuccessfulResult,
+        NameMismatch
+      )
+    ).mapN((_, _, _, _, _) => SuccessfulResult) match {
+      case Validated.Valid(_)   => Right(SuccessfulResult)
+      case Validated.Invalid(e) => Left(e.toList)
     }
-
-  private def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean = {
-    val fullName = name
-      .map(n => Seq(n.name, n.lastName).flatten.mkString(" "))
-      .getOrElse("")
-    matches(Some(fullName), Some(s"${recipient.firstName} ${recipient.lastName}"))
   }
 }

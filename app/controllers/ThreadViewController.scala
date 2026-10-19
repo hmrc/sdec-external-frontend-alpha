@@ -17,21 +17,23 @@
 package controllers
 
 import controllers.actions.IdentifyExternalUser
+import models.sdec.IdentityValidationPolicy
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
 import service.ThreadReferenceServiceAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.ThreadView
+import views.html.{LimitedThreadInterruptionView, ThreadView}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ThreadViewController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  identifyExternalUser:     IdentifyExternalUser,
-  threadReferenceService:   ThreadReferenceServiceAlgebra,
-  threadView:               ThreadView
+  val controllerComponents:      MessagesControllerComponents,
+  identifyExternalUser:          IdentifyExternalUser,
+  threadReferenceService:        ThreadReferenceServiceAlgebra,
+  threadView:                    ThreadView,
+  limitedThreadInterruptionView: LimitedThreadInterruptionView
 )(using ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -39,10 +41,16 @@ class ThreadViewController @Inject() (
 
   def onPageLoad(threadId: String): Action[AnyContent] = identifyExternalUser.async { request =>
     given Request[AnyContent] = request
-
     threadReferenceService
       .checkThreadReference(threadId)
-      .map(thread => Ok(threadView(thread)))
+      .map { thread =>
+        IdentityValidationPolicy.validate(request.externalUser, thread.recipientDetails) match {
+          case Right(_) =>
+            Ok(threadView(thread))
+          case Left(_) =>
+            Ok(limitedThreadInterruptionView(threadId))
+        }
+      }
       .recover { case exception =>
         logger.error("Failed to load thread", exception)
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())

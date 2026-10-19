@@ -26,4 +26,5 @@ POST        /file-upload                                 controllers.FileUploadC
 POST        /files-upload                                controllers.FileUploadController.uploadFiles(mode: Mode = NormalMode)
 
 GET         /thread/:threadId                            controllers.ThreadViewController.onPageLoad(threadId: String)
+GET         /thread/limited/:threadId                    controllers.LimitedThreadInterruptionViewController.onContinue(threadId: String)
 GET         /development-in-progress                     controllers.DevelopmentInProgressController.onPageLoad()

@@ -1,0 +1,55 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import models.ThreadReference
+@import uk.gov.hmrc.govukfrontend.views.html.components.*
+@import viewmodels.thread.ThreadSummaryViewModel
+@import models.sdec.AccessLevel.{Full, Limited}
+@import models.sdec.AccessLevel
+
+@this(layout: templates.Layout, govukButton: GovukButton)
+
+@(threadId: String)(implicit request: Request[_], messages: Messages)
+
+@layout(
+    pageTitle = titleNoForm(messages("limitedThreadInterruptionView.title")),
+    showBackLink = true
+) {
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <span class="govuk-caption-l" style="white-space: nowrap;">@messages("limitedThreadInterruptionView.page.caption")</span>
+
+        <h1 style="white-space: nowrap;" class="govuk-heading-l">@messages("limitedThreadInterruptionView.page.heading")</h1>
+
+        <p class="govuk-body">@messages("limitedThreadInterruptionView.paragraph.partone")</p>
+        <p class="govuk-body">@messages("limitedThreadInterruptionView.paragraph.parttwo")</p>
+        <p class="govuk-body">@messages("limitedThreadInterruptionView.paragraph.partthree")</p>
+        <p class="govuk-body">@messages("limitedThreadInterruptionView.paragraph.partfour")</p>
+
+        @govukButton(Button(
+        href = Some(routes.DevelopmentInProgressController.onPageLoad().url),
+        content = Text(messages("limitedThreadInterruptionView.button.verification"))
+        ))
+
+        <p class="govuk-body">
+            <a href="@routes.LimitedThreadInterruptionViewController.onContinue(threadId).url" class="govuk-link">@messages("limitedThreadInterruptionView.link.continue")</a>.
+        </p>
+
+    </div>
+</div>
+}

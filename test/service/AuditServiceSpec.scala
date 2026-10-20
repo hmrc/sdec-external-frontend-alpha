@@ -22,8 +22,9 @@ import models.audit.ThreadAccessOutcome
 import models.sdec.AccessValidationFailure.EmailMismatch
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.Assertion
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -37,7 +38,13 @@ import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import java.nio.file.Paths
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuditServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with MockitoSugar with ExternalUserFixtures {
+class AuditServiceSpec
+    extends AnyFreeSpec
+    with Matchers
+    with ScalaFutures
+    with MockitoSugar
+    with BeforeAndAfterEach
+    with ExternalUserFixtures {
 
   given HeaderCarrier    = HeaderCarrier()
   given ExecutionContext = ExecutionContext.global
@@ -65,142 +72,145 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with 
     "providerId" -> customerIdentifier.providerId
   )
 
-  private def withMockedAuditConnector(
-    result: AuditResult = AuditResult.Success
-  )(test: (AuditService, AuditConnector) => Assertion): Assertion = {
-    val auditConnector = mock[AuditConnector]
-    when(auditConnector.auditingConfig).thenReturn(
-      AuditingConfig(consumer = None, enabled = true, auditSource = auditSource, auditSentHeaders = false)
-    )
-    when(auditConnector.sendExtendedEvent(any())(using any(), any()))
-      .thenReturn(Future.successful(result))
-    test(AuditService(auditConnector), auditConnector)
+  private val mockAuditConnector: AuditConnector = mock[AuditConnector]
+  private val auditService:       AuditService   = AuditService(mockAuditConnector)
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(mockAuditConnector)
+    when(mockAuditConnector.auditingConfig)
+      .thenReturn(AuditingConfig(consumer = None, enabled = true, auditSource = auditSource, auditSentHeaders = false))
+    when(mockAuditConnector.sendExtendedEvent(any())(using any(), any()))
+      .thenReturn(Future.successful(AuditResult.Success))
   }
 
-  private def capturedEvent(auditConnector: AuditConnector): ExtendedDataEvent = {
+  private def capturedEvent(): ExtendedDataEvent = {
     val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
-    verify(auditConnector).sendExtendedEvent(captor.capture())(using any(), any())
+    verify(mockAuditConnector).sendExtendedEvent(captor.capture())(using any(), any())
     captor.getValue
   }
 
+  private def connectorReturns(result: AuditResult): Unit =
+    when(mockAuditConnector.sendExtendedEvent(any())(using any(), any()))
+      .thenReturn(Future.successful(result))
+
   "AuditService" - {
-
     "auditThreadViewed" - {
-      "must send a ThreadViewed event with the audit source from config" in withMockedAuditConnector() {
-        (auditService, auditConnector) =>
-          auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe AuditResult.Success
+      "must send a ThreadViewed event with the audit source from config" in {
+        auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe AuditResult.Success
 
-          val event = capturedEvent(auditConnector)
-          event.auditSource mustBe auditSource
-          event.auditType mustBe "ThreadViewed"
-          event.detail mustBe Json.obj(
-            "customerIdentifier" -> customerIdentifierJson,
-            "affinityGroup"      -> "Individual",
-            "threadReference"    -> threadReference
-          )
+        val event = capturedEvent()
+        event.auditSource mustBe auditSource
+        event.auditType mustBe "ThreadViewed"
+        event.detail mustBe Json.obj(
+          "customerIdentifier" -> customerIdentifierJson,
+          "affinityGroup"      -> "Individual",
+          "threadReference"    -> threadReference
+        )
       }
 
-      "must return the result from the connector unchanged" in withMockedAuditConnector(auditFailure) {
-        (auditService, _) =>
-          auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe auditFailure
+      "must return the result from the connector unchanged" in {
+        connectorReturns(auditFailure)
+
+        auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe auditFailure
       }
     }
 
     "auditThreadAccessAttempt" - {
-      "must send a ThreadAccessAttempt event with the outcome and failure reason" in withMockedAuditConnector() {
-        (auditService, auditConnector) =>
-          auditService
-            .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Denied, Some(EmailMismatch))
-            .futureValue mustBe AuditResult.Success
+      "must send a ThreadAccessAttempt event with the outcome and failure reason" in {
+        auditService
+          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Denied, Some(EmailMismatch))
+          .futureValue mustBe AuditResult.Success
 
-          val event = capturedEvent(auditConnector)
-          event.auditSource mustBe auditSource
-          event.auditType mustBe "ThreadAccessAttempt"
-          event.detail mustBe Json.obj(
-            "customerIdentifier" -> customerIdentifierJson,
-            "affinityGroup"      -> "Individual",
-            "confidenceLevel"    -> 200,
-            "threadReference"    -> threadReference,
-            "outcome"            -> "Denied",
-            "failureReason"      -> "EmailMismatch"
-          )
+        val event = capturedEvent()
+        event.auditSource mustBe auditSource
+        event.auditType mustBe "ThreadAccessAttempt"
+        event.detail mustBe Json.obj(
+          "customerIdentifier" -> customerIdentifierJson,
+          "affinityGroup"      -> "Individual",
+          "confidenceLevel"    -> 200,
+          "threadReference"    -> threadReference,
+          "outcome"            -> "Denied",
+          "failureReason"      -> "EmailMismatch"
+        )
       }
 
-      "must return the result from the connector unchanged" in withMockedAuditConnector(auditFailure) {
-        (auditService, _) =>
-          auditService
-            .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Granted, None)
-            .futureValue mustBe auditFailure
+      "must return the result from the connector unchanged" in {
+        connectorReturns(auditFailure)
+
+        auditService
+          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Granted, None)
+          .futureValue mustBe auditFailure
       }
     }
 
     "auditSingleFileUploaded" - {
-      "must send a SingleFileUploaded event with the content type and size" in withMockedAuditConnector() {
-        (auditService, auditConnector) =>
-          auditService.auditSingleFileUploaded(externalUser, pdfFile).futureValue mustBe AuditResult.Success
+      "must send a SingleFileUploaded event with the content type and size" in {
+        auditService.auditSingleFileUploaded(externalUser, pdfFile).futureValue mustBe AuditResult.Success
 
-          val event = capturedEvent(auditConnector)
-          event.auditSource mustBe auditSource
-          event.auditType mustBe "SingleFileUploaded"
-          event.detail mustBe Json.obj(
-            "customerIdentifier" -> customerIdentifierJson,
-            "affinityGroup"      -> "Individual",
-            "file"               -> Json.obj(
-              "contentType" -> "application/pdf",
-              "sizeBytes"   -> 120394
-            )
+        val event = capturedEvent()
+        event.auditSource mustBe auditSource
+        event.auditType mustBe "SingleFileUploaded"
+        event.detail mustBe Json.obj(
+          "customerIdentifier" -> customerIdentifierJson,
+          "affinityGroup"      -> "Individual",
+          "file"               -> Json.obj(
+            "contentType" -> "application/pdf",
+            "sizeBytes"   -> 120394
           )
+        )
       }
 
-      "must not send the file name or location" in withMockedAuditConnector() { (auditService, auditConnector) =>
+      "must not send the file name or location" in {
         auditService.auditSingleFileUploaded(externalUser, pdfFile).futureValue
 
-        val sentDetail            = Json.stringify(capturedEvent(auditConnector).detail)
+        val sentDetail            = Json.stringify(capturedEvent().detail)
         val fileNamesAndLocations = Seq(pdfFile.filename, pdfFile.location.toString)
 
         fileNamesAndLocations.filter(sentDetail.contains) mustBe empty
       }
 
-      "must return the result from the connector unchanged" in withMockedAuditConnector(auditFailure) {
-        (auditService, _) =>
-          auditService.auditSingleFileUploaded(externalUser, pdfFile).futureValue mustBe auditFailure
+      "must return the result from the connector unchanged" in {
+        connectorReturns(auditFailure)
+
+        auditService.auditSingleFileUploaded(externalUser, pdfFile).futureValue mustBe auditFailure
       }
     }
 
     "auditMultipleFilesUploaded" - {
-      "must send a MultipleFilesUploaded event with the files, count and total size" in withMockedAuditConnector() {
-        (auditService, auditConnector) =>
-          auditService
-            .auditMultipleFilesUploaded(externalUser, Seq(pdfFile, pngFile))
-            .futureValue mustBe AuditResult.Success
+      "must send a MultipleFilesUploaded event with the files, count and total size" in {
+        auditService
+          .auditMultipleFilesUploaded(externalUser, Seq(pdfFile, pngFile))
+          .futureValue mustBe AuditResult.Success
 
-          val event = capturedEvent(auditConnector)
-          event.auditSource mustBe auditSource
-          event.auditType mustBe "MultipleFilesUploaded"
-          event.detail mustBe Json.obj(
-            "customerIdentifier" -> customerIdentifierJson,
-            "affinityGroup"      -> "Individual",
-            "files"              -> Json.arr(
-              Json.obj("contentType" -> "application/pdf", "sizeBytes" -> 120394),
-              Json.obj("contentType" -> "image/png", "sizeBytes"       -> 50211)
-            ),
-            "fileCount"      -> 2,
-            "totalSizeBytes" -> 170605
-          )
+        val event = capturedEvent()
+        event.auditSource mustBe auditSource
+        event.auditType mustBe "MultipleFilesUploaded"
+        event.detail mustBe Json.obj(
+          "customerIdentifier" -> customerIdentifierJson,
+          "affinityGroup"      -> "Individual",
+          "files"              -> Json.arr(
+            Json.obj("contentType" -> "application/pdf", "sizeBytes" -> 120394),
+            Json.obj("contentType" -> "image/png", "sizeBytes"       -> 50211)
+          ),
+          "fileCount"      -> 2,
+          "totalSizeBytes" -> 170605
+        )
       }
 
-      "must not send any file name or location" in withMockedAuditConnector() { (auditService, auditConnector) =>
+      "must not send any file name or location" in {
         auditService.auditMultipleFilesUploaded(externalUser, Seq(pdfFile, pngFile)).futureValue
 
-        val sentDetail            = Json.stringify(capturedEvent(auditConnector).detail)
+        val sentDetail            = Json.stringify(capturedEvent().detail)
         val fileNamesAndLocations = Seq(pdfFile, pngFile).flatMap(file => Seq(file.filename, file.location.toString))
 
         fileNamesAndLocations.filter(sentDetail.contains) mustBe empty
       }
 
-      "must return the result from the connector unchanged" in withMockedAuditConnector(auditFailure) {
-        (auditService, _) =>
-          auditService.auditMultipleFilesUploaded(externalUser, Seq(pdfFile, pngFile)).futureValue mustBe auditFailure
+      "must return the result from the connector unchanged" in {
+        connectorReturns(auditFailure)
+
+        auditService.auditMultipleFilesUploaded(externalUser, Seq(pdfFile, pngFile)).futureValue mustBe auditFailure
       }
     }
   }

@@ -61,18 +61,18 @@ class FileUploadAuditEventsSpec extends AnyFreeSpec with Matchers with ExternalU
   }
 
   "MultipleFilesUploadedAuditEvent" - {
-    val event = MultipleFilesUploadedAuditEvent(
+    val multipleFilesUploadedAuditEvent = MultipleFilesUploadedAuditEvent(
       customerIdentifier = customerIdentifier,
       affinityGroup = Some("Individual"),
       files = Seq(pdfFile, pngFile)
     )
 
     "auditType must be MultipleFilesUploaded" in {
-      event.auditType mustBe "MultipleFilesUploaded"
+      multipleFilesUploadedAuditEvent.auditType mustBe "MultipleFilesUploaded"
     }
 
     "detail must contain the files, the file count and the total size" in {
-      event.detail mustBe Json.obj(
+      multipleFilesUploadedAuditEvent.detail mustBe Json.obj(
         "customerIdentifier" -> customerIdentifierJson,
         "affinityGroup"      -> "Individual",
         "files"              -> Json.arr(

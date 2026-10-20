@@ -38,14 +38,12 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
   "ThreadAccessAttemptAuditEvent" - {
 
     "auditType" - {
-
       "must be ThreadAccessAttempt" in {
         grantedEvent.auditType mustBe "ThreadAccessAttempt"
       }
     }
 
     "detail" - {
-
       "must contain only the agreed fields for a granted attempt" in {
         grantedEvent.detail mustBe Json.obj(
           "customerIdentifier" -> Json.obj(

@@ -36,5 +36,5 @@ trait ExternalUserFixtures {
     affinityGroup = Some(Individual),
     confidenceLevel = L200
   )
-  
+
 }

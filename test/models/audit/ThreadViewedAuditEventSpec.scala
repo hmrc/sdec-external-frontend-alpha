@@ -25,23 +25,22 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
 
   private val threadReference = "THREAD1000AA"
 
-  private val event = ThreadViewedAuditEvent(
+  private val threadViewedAuditEvent = ThreadViewedAuditEvent(
     customerIdentifier = customerIdentifier,
     affinityGroup = Some("Individual"),
     threadReference = threadReference
   )
 
   "ThreadViewedAuditEvent" - {
-
     "auditType" - {
       "must be ThreadViewed" in {
-        event.auditType mustBe "ThreadViewed"
+        threadViewedAuditEvent.auditType mustBe "ThreadViewed"
       }
     }
 
     "detail" - {
       "must contain only the agreed fields" in {
-        event.detail mustBe Json.obj(
+        threadViewedAuditEvent.detail mustBe Json.obj(
           "customerIdentifier" -> Json.obj(
             "provider"   -> "ONE_LOGIN",
             "providerId" -> customerIdentifier.providerId
@@ -52,19 +51,19 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
       }
 
       "must omit affinityGroup when it is not present" in {
-        event.copy(affinityGroup = None).detail.keys must not contain "affinityGroup"
+        threadViewedAuditEvent.copy(affinityGroup = None).detail.keys must not contain "affinityGroup"
       }
     }
 
     "extendedDataEvent" - {
       "must carry the given audit source, the audit type and the detail" in {
-        val dataEvent = event.extendedDataEvent("test-audit-source")
+        val dataEvent = threadViewedAuditEvent.extendedDataEvent("test-audit-source")
 
         dataEvent.auditSource mustBe "test-audit-source"
-        dataEvent.auditType mustBe event.auditType
-        dataEvent.detail mustBe event.detail
+        dataEvent.auditType mustBe threadViewedAuditEvent.auditType
+        dataEvent.detail mustBe threadViewedAuditEvent.detail
       }
     }
   }
-  
+
 }

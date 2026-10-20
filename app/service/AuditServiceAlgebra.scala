@@ -37,7 +37,7 @@ trait AuditServiceAlgebra {
     user:            ExternalUser,
     threadReference: String,
     outcome:         ThreadAccessOutcome,
-    failureReason:   Option[AccessValidationFailure]
+    failureReasons:  List[AccessValidationFailure]
   )(using hc: HeaderCarrier): Future[AuditResult]
 
   def auditSingleFileUploaded(

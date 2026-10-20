@@ -48,7 +48,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
     user:            ExternalUser,
     threadReference: String,
     outcome:         ThreadAccessOutcome,
-    failureReason:   Option[AccessValidationFailure]
+    failureReasons:  List[AccessValidationFailure]
   )(using hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendExtendedEvent(
       ThreadAccessAttemptAuditEvent(
@@ -57,7 +57,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
         confidenceLevel = user.confidenceLevel.level,
         threadReference = threadReference,
         outcome = outcome,
-        failureReason = failureReason
+        failureReasons = failureReasons
       ).extendedDataEvent(auditSource)
     )
 

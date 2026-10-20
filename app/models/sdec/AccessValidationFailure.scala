@@ -36,18 +36,22 @@ object AccessLevel {
 }
 
 enum AccessLevel {
-  case NoAccess extends AccessLevel
-  case Limited extends AccessLevel
-  case Full extends AccessLevel
+  case NoAccess
+  case Limited
+  case Full
 }
 
 enum AccessValidationFailure {
-  case InsufficientConfidence extends AccessValidationFailure
-  case EmailMismatch extends AccessValidationFailure
+  case InsufficientConfidence
+  case EmailMismatch
   // The above two are probably the only fields we care about the three below can potentially be removed
-  case AffinityMismatch extends AccessValidationFailure
-  case NinoMismatch extends AccessValidationFailure
-  case NameMismatch extends AccessValidationFailure
+  case AffinityMismatch
+  case NinoMismatch
+  case NameMismatch
+}
+
+object AccessValidationFailure {
+  given Writes[AccessValidationFailure] = Writes(failure => JsString(failure.toString))
 }
 
 object IdentityValidationPolicy {

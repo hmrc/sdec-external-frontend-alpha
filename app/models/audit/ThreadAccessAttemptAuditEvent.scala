@@ -25,7 +25,7 @@ final case class ThreadAccessAttemptAuditEvent(
   confidenceLevel:    Int,
   threadReference:    String,
   outcome:            ThreadAccessOutcome,
-  failureReason:      Option[AccessValidationFailure]
+  failureReasons:     List[AccessValidationFailure]
 ) extends AuditEvent {
   override def auditType: String   = "ThreadAccessAttempt"
   override def detail:    JsObject = Json.toJsObject(this)

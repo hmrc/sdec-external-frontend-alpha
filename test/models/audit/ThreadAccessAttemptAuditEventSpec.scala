@@ -17,6 +17,7 @@
 package models.audit
 
 import fixtures.ExternalUserFixtures
+import models.sdec.AccessValidationFailure
 import models.sdec.AccessValidationFailure.EmailMismatch
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -32,7 +33,7 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
     confidenceLevel = 200,
     threadReference = threadReference,
     outcome = ThreadAccessOutcome.Granted,
-    failureReason = None
+    failureReasons = List.empty[AccessValidationFailure]
   )
 
   "ThreadAccessAttemptAuditEvent" - {
@@ -53,14 +54,15 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
           "affinityGroup"   -> "Individual",
           "confidenceLevel" -> 200,
           "threadReference" -> threadReference,
-          "outcome"         -> "Granted"
+          "outcome"         -> "Granted",
+          "failureReasons"  -> Json.arr() // FIXME:
         )
       }
 
       "must include the failure reason for a denied attempt" in {
         val deniedEvent = grantedEvent.copy(
           outcome = ThreadAccessOutcome.Denied,
-          failureReason = Some(EmailMismatch)
+          failureReasons = List(EmailMismatch)
         )
 
         deniedEvent.detail mustBe Json.obj(
@@ -72,7 +74,7 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
           "confidenceLevel" -> 200,
           "threadReference" -> threadReference,
           "outcome"         -> "Denied",
-          "failureReason"   -> "EmailMismatch"
+          "failureReasons"  -> Json.arr("EmailMismatch")
         )
       }
 

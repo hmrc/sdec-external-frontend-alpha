@@ -119,7 +119,7 @@ class AuditServiceSpec
     "auditThreadAccessAttempt" - {
       "must send a ThreadAccessAttempt event with the outcome and failure reason" in {
         auditService
-          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Denied, Some(EmailMismatch))
+          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Denied, List(EmailMismatch))
           .futureValue mustBe AuditResult.Success
 
         val event = capturedEvent()
@@ -131,7 +131,7 @@ class AuditServiceSpec
           "confidenceLevel"    -> 200,
           "threadReference"    -> threadReference,
           "outcome"            -> "Denied",
-          "failureReason"      -> "EmailMismatch"
+          "failureReasons"     -> Json.arr("EmailMismatch")
         )
       }
 
@@ -139,7 +139,7 @@ class AuditServiceSpec
         connectorReturns(auditFailure)
 
         auditService
-          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Granted, None)
+          .auditThreadAccessAttempt(externalUser, threadReference, ThreadAccessOutcome.Granted, Nil)
           .futureValue mustBe auditFailure
       }
     }

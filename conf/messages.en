@@ -81,6 +81,19 @@ threadview.inset.awaitingReply = HMRC is waiting for your reply.
 threadview.inset.closed = This thread is closed. You can still view it, but you cannot reply.
 threadview.inset.archived = This thread has been archived.
 
+limitedThreadView.paragraph = This is a limited view of your thread. You can see when HMRC has sent a message and when you have replied, but not message content or attachments
+
+limitedThreadInterruptionView.title = Limited Access
+limitedThreadInterruptionView.page.caption = Share Files Securely with HMRC
+limitedThreadInterruptionView.page.heading = Action required for full access
+limitedThreadInterruptionView.paragraph.partone = You only have limited access to the SDEC service.
+limitedThreadInterruptionView.paragraph.parttwo = To get full access to the service, you need to verify your identity using Government Gateway or GOV.UK One Login.
+limitedThreadInterruptionView.paragraph.partthree = You need to re-enter your details using Government Gateway or GOV.UK One Login to confirm your identity.
+limitedThreadInterruptionView.paragraph.partfour = If you do not complete verification, you will have limited access to the service's features.
+limitedThreadInterruptionView.button.verification = Verify Identity
+limitedThreadInterruptionView.link.continue = Continue with limited access
+
+
 devInProgress.title = Development in progress
 devInProgress.heading = Development in progress
 devInProgress.guidance = This part of the service has not been built yet.

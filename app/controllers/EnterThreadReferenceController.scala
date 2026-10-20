@@ -20,7 +20,7 @@ import controllers.actions.IdentifyExternalUser
 import forms.models.ThreadReferenceForm
 import forms.providers.ThreadReferenceFormProvider
 import models.Mode
-import models.sdec.{ExternalUser, IdentityValidationPolicy}
+import models.sdec.{AccessLevel, ExternalUser, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.data.Form
 import play.api.http.Status as HttpStatus
@@ -29,17 +29,18 @@ import play.api.mvc.*
 import service.ThreadReferenceServiceAlgebra
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.EnterThreadReferenceView
+import views.html.{EnterThreadReferenceView, LimitedThreadInterruptionView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class EnterThreadReferenceController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  identifyExternalUser:     IdentifyExternalUser,
-  enterThreadReferenceView: EnterThreadReferenceView,
-  formProvider:             ThreadReferenceFormProvider,
-  threadReferenceService:   ThreadReferenceServiceAlgebra
+  val controllerComponents:      MessagesControllerComponents,
+  identifyExternalUser:          IdentifyExternalUser,
+  enterThreadReferenceView:      EnterThreadReferenceView,
+  limitedThreadInterruptionView: LimitedThreadInterruptionView,
+  formProvider:                  ThreadReferenceFormProvider,
+  threadReferenceService:        ThreadReferenceServiceAlgebra
 )(using ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -77,10 +78,8 @@ class EnterThreadReferenceController @Inject() (
       .checkThreadReference(trForm.reference)
       .map { threadReference =>
         IdentityValidationPolicy.validate(user, threadReference.recipientDetails) match {
-          case Right(()) =>
-            Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
-          case Left(failure) =>
-            logger.error(s"Access denied for thread ${trForm.reference}: $failure")
+          case Left(errors) if AccessLevel.fromAccessValidationFailures(errors) == AccessLevel.NoAccess =>
+            logger.error(s"Access denied for thread ${trForm.reference}: $errors")
             Forbidden(
               enterThreadReferenceView(
                 user,
@@ -88,6 +87,7 @@ class EnterThreadReferenceController @Inject() (
                 mode
               )
             )
+          case _ => Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
         }
       }
       .recover {

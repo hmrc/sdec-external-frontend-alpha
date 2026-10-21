@@ -90,7 +90,10 @@ class EnterThreadReferenceController @Inject() (
                 mode
               )
             )
-          case _ =>
+          case Left(errors) =>
+            auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.Limited, errors)
+            Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
+          case Right(_) =>
             auditService.auditThreadAccessAttempt(user, trForm.reference, ThreadAccessOutcome.Granted, Nil)
             Redirect(routes.ThreadViewController.onPageLoad(trForm.reference))
         }

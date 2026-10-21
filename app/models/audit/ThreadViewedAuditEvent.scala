@@ -16,13 +16,14 @@
 
 package models.audit
 
-import models.sdec.CustomerIdentifier
+import models.sdec.{AccessLevel, CustomerIdentifier}
 import play.api.libs.json.{JsObject, Json, OWrites}
 
 final case class ThreadViewedAuditEvent(
   customerIdentifier: CustomerIdentifier,
   affinityGroup:      Option[String],
-  threadReference:    String
+  threadReference:    String,
+  accessLevel:        AccessLevel
 ) extends AuditEvent {
   override def auditType: String   = "ThreadViewed"
   override def detail:    JsObject = Json.toJsObject(this)

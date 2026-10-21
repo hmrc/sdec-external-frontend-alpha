@@ -17,10 +17,11 @@
 package controllers
 
 import controllers.actions.IdentifyExternalUser
+import models.sdec.AccessLevel
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
-import service.ThreadReferenceServiceAlgebra
+import service.{AuditServiceAlgebra, ThreadReferenceServiceAlgebra}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{LimitedThreadInterruptionView, LimitedThreadView}
 
@@ -32,6 +33,7 @@ class LimitedThreadInterruptionViewController @Inject() (
   identifyExternalUser:          IdentifyExternalUser,
   limitedThreadInterruptionView: LimitedThreadInterruptionView,
   threadReferenceService:        ThreadReferenceServiceAlgebra,
+  auditService:                  AuditServiceAlgebra,
   limitedThreadView:             LimitedThreadView
 )(using ec: ExecutionContext)
     extends FrontendBaseController
@@ -40,20 +42,23 @@ class LimitedThreadInterruptionViewController @Inject() (
 
   def onPageLoad(threadId: String): Action[AnyContent] = identifyExternalUser.async { request =>
     given Request[AnyContent] = request
+
     Future.successful(Ok(limitedThreadInterruptionView(threadId)))
   }
 
   def onContinue(threadId: String): Action[AnyContent] = identifyExternalUser.async { request =>
     given Request[AnyContent] = request
+
     threadReferenceService
       .checkThreadReference(threadId)
       .map { threadRef =>
+        auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Limited)
         Ok(limitedThreadView(threadRef))
       }
       .recover { case exception =>
         logger.error("Failed to load thread", exception)
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
-
   }
+
 }

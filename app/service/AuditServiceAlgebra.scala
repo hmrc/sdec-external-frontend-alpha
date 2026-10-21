@@ -18,7 +18,7 @@ package service
 
 import models.UploadedFile
 import models.audit.ThreadAccessOutcome
-import models.sdec.{AccessValidationFailure, ExternalUser}
+import models.sdec.{AccessLevel, AccessValidationFailure, ExternalUser}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
@@ -30,7 +30,8 @@ trait AuditServiceAlgebra {
 
   def auditThreadViewed(
     user:            ExternalUser,
-    threadReference: String
+    threadReference: String,
+    accessLevel:     AccessLevel
   )(using hc: HeaderCarrier): Future[AuditResult]
 
   def auditThreadAccessAttempt(

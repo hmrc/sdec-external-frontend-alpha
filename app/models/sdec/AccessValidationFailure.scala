@@ -25,22 +25,6 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Name
 import utils.SuccessfulResult
 
-object AccessLevel {
-  def fromAccessValidationFailures(failures: List[AccessValidationFailure]): AccessLevel = {
-    val (isLowConfidence, otherFailures) =
-      failures.partition(failure => failure == AccessValidationFailure.InsufficientConfidence)
-    val isEmailMismatch = otherFailures.contains(EmailMismatch)
-    if isLowConfidence.nonEmpty && !isEmailMismatch then Limited
-    else NoAccess
-  }
-}
-
-enum AccessLevel {
-  case NoAccess
-  case Limited
-  case Full
-}
-
 enum AccessValidationFailure {
   case InsufficientConfidence
   case EmailMismatch

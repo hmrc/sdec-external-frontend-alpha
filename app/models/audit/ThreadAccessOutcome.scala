@@ -20,6 +20,7 @@ import play.api.libs.json.{JsString, Writes}
 
 enum ThreadAccessOutcome {
   case Granted
+  case Limited
   case Denied
   case NotFound
   case Error

@@ -19,6 +19,7 @@ package service
 import fixtures.ExternalUserFixtures
 import models.UploadedFile
 import models.audit.ThreadAccessOutcome
+import models.sdec.AccessLevel
 import models.sdec.AccessValidationFailure.EmailMismatch
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -97,7 +98,7 @@ class AuditServiceSpec
   "AuditService" - {
     "auditThreadViewed" - {
       "must send a ThreadViewed event with the audit source from config" in {
-        auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe AuditResult.Success
+        auditService.auditThreadViewed(externalUser, threadReference, AccessLevel.Full).futureValue mustBe AuditResult.Success
 
         val event = capturedEvent()
         event.auditSource mustBe auditSource
@@ -105,14 +106,15 @@ class AuditServiceSpec
         event.detail mustBe Json.obj(
           "customerIdentifier" -> customerIdentifierJson,
           "affinityGroup"      -> "Individual",
-          "threadReference"    -> threadReference
+          "threadReference"    -> threadReference,
+          "accessLevel"        -> "Full"
         )
       }
 
       "must return the result from the connector unchanged" in {
         connectorReturns(auditFailure)
 
-        auditService.auditThreadViewed(externalUser, threadReference).futureValue mustBe auditFailure
+        auditService.auditThreadViewed(externalUser, threadReference, AccessLevel.Full).futureValue mustBe auditFailure
       }
     }
 

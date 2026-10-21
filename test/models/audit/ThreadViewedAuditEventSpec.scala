@@ -17,6 +17,7 @@
 package models.audit
 
 import fixtures.ExternalUserFixtures
+import models.sdec.AccessLevel
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
@@ -28,7 +29,8 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
   private val threadViewedAuditEvent = ThreadViewedAuditEvent(
     customerIdentifier = customerIdentifier,
     affinityGroup = Some("Individual"),
-    threadReference = threadReference
+    threadReference = threadReference,
+    accessLevel = AccessLevel.Full
   )
 
   "ThreadViewedAuditEvent" - {
@@ -46,7 +48,8 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
             "providerId" -> customerIdentifier.providerId
           ),
           "affinityGroup"   -> "Individual",
-          "threadReference" -> threadReference
+          "threadReference" -> threadReference,
+          "accessLevel"     -> "Full"
         )
       }
 

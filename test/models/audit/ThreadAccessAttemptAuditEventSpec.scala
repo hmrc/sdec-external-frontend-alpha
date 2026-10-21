@@ -55,7 +55,7 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
           "confidenceLevel" -> 200,
           "threadReference" -> threadReference,
           "outcome"         -> "Granted",
-          "failureReasons"  -> Json.arr() // FIXME:
+          "failureReasons"  -> Json.arr()
         )
       }
 
@@ -81,10 +81,13 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
       "must write each outcome with its agreed name" in {
         val expectedNames = Map(
           ThreadAccessOutcome.Granted  -> "Granted",
+          ThreadAccessOutcome.Limited  -> "Limited",
           ThreadAccessOutcome.Denied   -> "Denied",
           ThreadAccessOutcome.NotFound -> "NotFound",
           ThreadAccessOutcome.Error    -> "Error"
         )
+
+        expectedNames.keySet mustBe ThreadAccessOutcome.values.toSet
 
         expectedNames.foreach { (outcome, name) =>
           (grantedEvent.copy(outcome = outcome).detail \ "outcome").as[String] mustBe name

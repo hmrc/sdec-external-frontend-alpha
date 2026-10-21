@@ -18,7 +18,7 @@ package service
 
 import models.UploadedFile
 import models.audit.*
-import models.sdec.{AccessValidationFailure, ExternalUser}
+import models.sdec.{AccessLevel, AccessValidationFailure, ExternalUser}
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -34,13 +34,15 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
 
   def auditThreadViewed(
     user:            ExternalUser,
-    threadReference: String
+    threadReference: String,
+    accessLevel:     AccessLevel
   )(using hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendExtendedEvent(
       ThreadViewedAuditEvent(
         customerIdentifier = user.id,
         affinityGroup = user.affinityGroup.map(_.toString),
-        threadReference = threadReference
+        threadReference = threadReference,
+        accessLevel = accessLevel
       ).extendedDataEvent(auditSource)
     )
 

@@ -17,7 +17,8 @@
 package controllers
 
 import controllers.actions.IdentifyExternalUser
-import models.sdec.IdentityValidationPolicy
+import models.audit.ThreadAccessOutcome
+import models.sdec.{AccessLevel, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
@@ -47,9 +48,10 @@ class ThreadViewController @Inject() (
       .map { thread =>
         IdentityValidationPolicy.validate(request.externalUser, thread.recipientDetails) match {
           case Right(_) =>
-            auditService.auditThreadViewed(request.externalUser, threadId)
+            auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Full)
             Ok(threadView(thread))
-          case Left(_) =>
+          case Left(errors) =>
+            auditService.auditThreadAccessAttempt(request.externalUser, threadId, ThreadAccessOutcome.Denied, errors)
             Ok(limitedThreadInterruptionView(threadId))
         }
       }

@@ -26,8 +26,6 @@ import scala.concurrent.Future
 
 trait AuditServiceAlgebra {
 
-  // def audit(event: AuditEvent)(using hc: HeaderCarrier): Future[AuditResult]
-
   def auditThreadViewed(
     user:            ExternalUser,
     threadReference: String,

@@ -108,6 +108,10 @@ class AuditServiceSpec
         event.detail mustBe Json.obj(
           "customerIdentifier" -> customerIdentifierJson,
           "affinityGroup"      -> "Individual",
+          "firstName"          -> "John",
+          "lastName"           -> "Doe",
+          "email"              -> "johndoe@example.com",
+          "nino"               -> "AA000000A",
           "threadReference"    -> threadReference,
           "accessLevel"        -> "Full"
         )
@@ -132,6 +136,10 @@ class AuditServiceSpec
         event.detail mustBe Json.obj(
           "customerIdentifier" -> customerIdentifierJson,
           "affinityGroup"      -> "Individual",
+          "firstName"          -> "John",
+          "lastName"           -> "Doe",
+          "email"              -> "johndoe@example.com",
+          "nino"               -> "AA000000A",
           "confidenceLevel"    -> 200,
           "threadReference"    -> threadReference,
           "outcome"            -> "Denied",
@@ -158,6 +166,10 @@ class AuditServiceSpec
         event.detail mustBe Json.obj(
           "customerIdentifier" -> customerIdentifierJson,
           "affinityGroup"      -> "Individual",
+          "firstName"          -> "John",
+          "lastName"           -> "Doe",
+          "email"              -> "johndoe@example.com",
+          "nino"               -> "AA000000A",
           "file"               -> Json.obj(
             "contentType" -> "application/pdf",
             "sizeBytes"   -> 120394
@@ -193,6 +205,10 @@ class AuditServiceSpec
         event.detail mustBe Json.obj(
           "customerIdentifier" -> customerIdentifierJson,
           "affinityGroup"      -> "Individual",
+          "firstName"          -> "John",
+          "lastName"           -> "Doe",
+          "email"              -> "johndoe@example.com",
+          "nino"               -> "AA000000A",
           "files"              -> Json.arr(
             Json.obj("contentType" -> "application/pdf", "sizeBytes" -> 120394),
             Json.obj("contentType" -> "image/png", "sizeBytes"       -> 50211)

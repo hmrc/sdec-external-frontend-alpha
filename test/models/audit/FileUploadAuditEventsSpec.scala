@@ -35,6 +35,10 @@ class FileUploadAuditEventsSpec extends AnyFreeSpec with Matchers with ExternalU
     val event = SingleFileUploadedAuditEvent(
       customerIdentifier = customerIdentifier,
       affinityGroup = Some("Individual"),
+      firstName = Some("John"),
+      lastName = Some("Doe"),
+      email = Some("johndoe@example.com"),
+      nino = Some("AA000000A"),
       file = pdfFile
     )
 
@@ -46,6 +50,10 @@ class FileUploadAuditEventsSpec extends AnyFreeSpec with Matchers with ExternalU
       event.detail mustBe Json.obj(
         "customerIdentifier" -> customerIdentifierJson,
         "affinityGroup"      -> "Individual",
+        "firstName"          -> "John",
+        "lastName"           -> "Doe",
+        "email"              -> "johndoe@example.com",
+        "nino"               -> "AA000000A",
         "file"               -> Json.obj(
           "contentType" -> "application/pdf",
           "sizeBytes"   -> 120394
@@ -64,6 +72,10 @@ class FileUploadAuditEventsSpec extends AnyFreeSpec with Matchers with ExternalU
     val multipleFilesUploadedAuditEvent = MultipleFilesUploadedAuditEvent(
       customerIdentifier = customerIdentifier,
       affinityGroup = Some("Individual"),
+      firstName = Some("John"),
+      lastName = Some("Doe"),
+      email = Some("johndoe@example.com"),
+      nino = Some("AA000000A"),
       files = Seq(pdfFile, pngFile)
     )
 
@@ -75,6 +87,10 @@ class FileUploadAuditEventsSpec extends AnyFreeSpec with Matchers with ExternalU
       multipleFilesUploadedAuditEvent.detail mustBe Json.obj(
         "customerIdentifier" -> customerIdentifierJson,
         "affinityGroup"      -> "Individual",
+        "firstName"          -> "John",
+        "lastName"           -> "Doe",
+        "email"              -> "johndoe@example.com",
+        "nino"               -> "AA000000A",
         "files"              -> Json.arr(
           Json.obj("contentType" -> "application/pdf", "sizeBytes" -> 120394),
           Json.obj("contentType" -> "image/png", "sizeBytes"       -> 50211)

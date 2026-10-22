@@ -32,6 +32,9 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
 
   private def auditSource: String = auditConnector.auditingConfig.auditSource
 
+  private def firstName(user: ExternalUser): Option[String] = user.name.flatMap(_.name)
+  private def lastName(user:  ExternalUser): Option[String] = user.name.flatMap(_.lastName)
+
   def auditThreadViewed(
     user:            ExternalUser,
     threadReference: String,
@@ -41,6 +44,10 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
       ThreadViewedAuditEvent(
         customerIdentifier = user.id,
         affinityGroup = user.affinityGroup.map(_.toString),
+        firstName = firstName(user),
+        lastName = lastName(user),
+        email = user.email,
+        nino = user.nino,
         threadReference = threadReference,
         accessLevel = accessLevel
       ).extendedDataEvent(auditSource)
@@ -56,6 +63,10 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
       ThreadAccessAttemptAuditEvent(
         customerIdentifier = user.id,
         affinityGroup = user.affinityGroup.map(_.toString),
+        firstName = firstName(user),
+        lastName = lastName(user),
+        email = user.email,
+        nino = user.nino,
         confidenceLevel = user.confidenceLevel.level,
         threadReference = threadReference,
         outcome = outcome,
@@ -71,6 +82,10 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
       SingleFileUploadedAuditEvent(
         customerIdentifier = user.id,
         affinityGroup = user.affinityGroup.map(_.toString),
+        firstName = firstName(user),
+        lastName = lastName(user),
+        email = user.email,
+        nino = user.nino,
         file = AuditedFile(contentType = file.contentType, sizeBytes = file.size)
       ).extendedDataEvent(auditSource)
     )
@@ -83,6 +98,10 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
       MultipleFilesUploadedAuditEvent(
         customerIdentifier = user.id,
         affinityGroup = user.affinityGroup.map(_.toString),
+        firstName = firstName(user),
+        lastName = lastName(user),
+        email = user.email,
+        nino = user.nino,
         files = files.map(file => AuditedFile(contentType = file.contentType, sizeBytes = file.size))
       ).extendedDataEvent(auditSource)
     )

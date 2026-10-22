@@ -22,6 +22,10 @@ import play.api.libs.json.{JsObject, Json, OWrites}
 final case class ThreadViewedAuditEvent(
   customerIdentifier: CustomerIdentifier,
   affinityGroup:      Option[String],
+  firstName:          Option[String],
+  lastName:           Option[String],
+  email:              Option[String],
+  nino:               Option[String],
   threadReference:    String,
   accessLevel:        AccessLevel
 ) extends AuditEvent {

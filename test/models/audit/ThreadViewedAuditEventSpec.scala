@@ -29,6 +29,10 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
   private val threadViewedAuditEvent = ThreadViewedAuditEvent(
     customerIdentifier = customerIdentifier,
     affinityGroup = Some("Individual"),
+    firstName = Some("John"),
+    lastName = Some("Doe"),
+    email = Some("johndoe@example.com"),
+    nino = Some("AA000000A"),
     threadReference = threadReference,
     accessLevel = AccessLevel.Full
   )
@@ -48,6 +52,10 @@ class ThreadViewedAuditEventSpec extends AnyFreeSpec with Matchers with External
             "providerId" -> customerIdentifier.providerId
           ),
           "affinityGroup"   -> "Individual",
+          "firstName"       -> "John",
+          "lastName"        -> "Doe",
+          "email"           -> "johndoe@example.com",
+          "nino"            -> "AA000000A",
           "threadReference" -> threadReference,
           "accessLevel"     -> "Full"
         )

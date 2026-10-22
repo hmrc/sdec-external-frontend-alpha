@@ -30,7 +30,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LimitedThreadInterruptionViewControllerSpec extends SpecBase with IdentifyExternalUserFixtures  with ThreadReferenceFixtures {
+class LimitedThreadInterruptionViewControllerSpec
+    extends SpecBase
+    with IdentifyExternalUserFixtures
+    with ThreadReferenceFixtures {
 
   given HeaderCarrier    = HeaderCarrier()
   given ExecutionContext = ExecutionContext.global

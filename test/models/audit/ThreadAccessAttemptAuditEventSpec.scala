@@ -30,6 +30,10 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
   private val grantedEvent = ThreadAccessAttemptAuditEvent(
     customerIdentifier = customerIdentifier,
     affinityGroup = Some("Individual"),
+    firstName = Some("John"),
+    lastName = Some("Doe"),
+    email = Some("johndoe@example.com"),
+    nino = Some("AA000000A"),
     confidenceLevel = 200,
     threadReference = threadReference,
     outcome = ThreadAccessOutcome.Granted,
@@ -52,6 +56,10 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
             "providerId" -> customerIdentifier.providerId
           ),
           "affinityGroup"   -> "Individual",
+          "firstName"       -> "John",
+          "lastName"        -> "Doe",
+          "email"           -> "johndoe@example.com",
+          "nino"            -> "AA000000A",
           "confidenceLevel" -> 200,
           "threadReference" -> threadReference,
           "outcome"         -> "Granted",
@@ -71,6 +79,10 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
             "providerId" -> customerIdentifier.providerId
           ),
           "affinityGroup"   -> "Individual",
+          "firstName"       -> "John",
+          "lastName"        -> "Doe",
+          "email"           -> "johndoe@example.com",
+          "nino"            -> "AA000000A",
           "confidenceLevel" -> 200,
           "threadReference" -> threadReference,
           "outcome"         -> "Denied",
@@ -97,6 +109,15 @@ class ThreadAccessAttemptAuditEventSpec extends AnyFreeSpec with Matchers with E
       "must omit affinityGroup when it is not present" in {
         grantedEvent.copy(affinityGroup = None).detail.keys must not contain "affinityGroup"
       }
+
+      "must omit personal details when they are not present" in {
+        val detail = grantedEvent
+          .copy(firstName = None, lastName = None, email = None, nino = None)
+          .detail
+
+        detail.keys must contain noneOf ("firstName", "lastName", "email", "nino")
+      }
+
     }
   }
 

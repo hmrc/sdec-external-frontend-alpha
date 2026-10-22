@@ -22,6 +22,10 @@ import play.api.libs.json.{JsObject, Json, OWrites}
 final case class SingleFileUploadedAuditEvent(
   customerIdentifier: CustomerIdentifier,
   affinityGroup:      Option[String],
+  firstName:          Option[String],
+  lastName:           Option[String],
+  email:              Option[String],
+  nino:               Option[String],
   file:               AuditedFile
 ) extends AuditEvent {
   override def auditType: String   = "SingleFileUploaded"

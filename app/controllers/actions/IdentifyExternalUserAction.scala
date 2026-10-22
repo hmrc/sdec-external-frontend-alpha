@@ -45,7 +45,7 @@ class IdentifyExternalUserAction @Inject() (
     with AuthorisedFunctions
     with Logging {
 
-  override protected def executionContext: ExecutionContext = ExecutionContext.global
+  override protected def executionContext: ExecutionContext = ec
 
   override def invokeBlock[A](
     request: Request[A],

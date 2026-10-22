@@ -45,13 +45,15 @@ class ThreadViewController @Inject() (
     given Request[AnyContent] = request
     threadReferenceService
       .checkThreadReference(threadId)
-      .map { thread =>
-        IdentityValidationPolicy.validate(request.externalUser, thread.recipientDetails) match {
+      .map { threadRef =>
+        IdentityValidationPolicy.validate(request.externalUser, threadRef.recipientDetails) match {
           case Right(_) =>
             auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Full)
-            Ok(threadView(thread))
-          case Left(errors) =>
+            Ok(threadView(threadRef))
+          case Left(errors) if AccessLevel.fromAccessValidationFailures(errors) == AccessLevel.NoAccess =>
             auditService.auditThreadAccessAttempt(request.externalUser, threadId, ThreadAccessOutcome.Denied, errors)
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
+          case Left(_) =>
             Ok(limitedThreadInterruptionView(threadId))
         }
       }
@@ -60,4 +62,5 @@ class ThreadViewController @Inject() (
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
   }
+
 }

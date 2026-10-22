@@ -98,7 +98,9 @@ class AuditServiceSpec
   "AuditService" - {
     "auditThreadViewed" - {
       "must send a ThreadViewed event with the audit source from config" in {
-        auditService.auditThreadViewed(externalUser, threadReference, AccessLevel.Full).futureValue mustBe AuditResult.Success
+        auditService
+          .auditThreadViewed(externalUser, threadReference, AccessLevel.Full)
+          .futureValue mustBe AuditResult.Success
 
         val event = capturedEvent()
         event.auditSource mustBe auditSource

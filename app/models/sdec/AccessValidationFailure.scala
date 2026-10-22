@@ -48,8 +48,11 @@ object IdentityValidationPolicy {
     def matches(a: Option[String], b: Option[String]): Boolean =
       a.map(_.toLowerCase.trim) == b.map(_.toLowerCase.trim)
 
-    def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean =
-      matches(name.flatMap(_.name), Some(recipient.firstName.trim + " " + recipient.lastName.trim))
+    def fullNameMatches(fullName: Option[Name], recipient: RecipientDetails): Boolean =
+      matches(
+        fullName.flatMap(fn => fn.name.map(first => s"$first ${fn.lastName.getOrElse("")}")),
+        Some(recipient.firstName.trim + " " + recipient.lastName.trim)
+      )
 
     (
       Validated.condNel(
@@ -73,7 +76,7 @@ object IdentityValidationPolicy {
         NinoMismatch
       ),
       Validated.condNel(
-        nameMatches(user.name, recipient),
+        fullNameMatches(user.name, recipient),
         SuccessfulResult,
         NameMismatch
       )

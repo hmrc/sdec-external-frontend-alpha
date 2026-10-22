@@ -17,7 +17,8 @@
 package controllers
 
 import controllers.actions.IdentifyExternalUser
-import models.sdec.AccessLevel
+import models.audit.ThreadAccessOutcome
+import models.sdec.{AccessLevel, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
@@ -52,8 +53,16 @@ class LimitedThreadInterruptionViewController @Inject() (
     threadReferenceService
       .checkThreadReference(threadId)
       .map { threadRef =>
-        auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Limited)
-        Ok(limitedThreadView(threadRef))
+        IdentityValidationPolicy.validate(request.externalUser, threadRef.recipientDetails) match {
+          case Right(_) =>
+            Redirect(routes.ThreadViewController.onPageLoad(threadId))
+          case Left(errors) if AccessLevel.fromAccessValidationFailures(errors) == AccessLevel.NoAccess =>
+            auditService.auditThreadAccessAttempt(request.externalUser, threadId, ThreadAccessOutcome.Denied, errors)
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
+          case Left(_) =>
+            auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Limited)
+            Ok(limitedThreadView(threadRef))
+        }
       }
       .recover { case exception =>
         logger.error("Failed to load thread", exception)

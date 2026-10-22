@@ -17,6 +17,7 @@
 package base
 
 import controllers.actions.*
+import fixtures.IdentifyExternalUserFixtures
 import models.UserAnswers
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -34,7 +35,8 @@ trait SpecBase
     with TryValues
     with OptionValues
     with ScalaFutures
-    with IntegrationPatience {
+    with IntegrationPatience
+    with IdentifyExternalUserFixtures {
 
   val userAnswersId: String = "id"
 
@@ -55,4 +57,5 @@ trait SpecBase
           new FakeDataRetrievalAction(userAnswers)
         )
       )
+
 }

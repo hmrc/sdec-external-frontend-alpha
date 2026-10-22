@@ -20,32 +20,23 @@ import cats.data.{NonEmptyList, Validated}
 import cats.implicits.catsSyntaxTuple5Semigroupal
 import models.RecipientDetails
 import models.sdec.AccessValidationFailure.*
+import play.api.libs.json.{JsString, Writes}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Name
 import utils.SuccessfulResult
 
-object AccessLevel {
-  def fromAccessValidationFailures(failures: List[AccessValidationFailure]): AccessLevel = {
-    val (isLowConfidence, otherFailures) =
-      failures.partition(failure => failure == AccessValidationFailure.InsufficientConfidence)
-    val isEmailMismatch = otherFailures.contains(EmailMismatch)
-    if isLowConfidence.nonEmpty && !isEmailMismatch then Limited
-    else NoAccess
-  }
+enum AccessValidationFailure {
+  case InsufficientConfidence
+  case EmailMismatch
+  // The above two are probably the only fields we care about the three below can potentially be removed
+  case AffinityMismatch
+  case NinoMismatch
+  case NameMismatch
 }
 
-enum AccessLevel:
-  case NoAccess extends AccessLevel
-  case Limited extends AccessLevel
-  case Full extends AccessLevel
-
-enum AccessValidationFailure:
-  case InsufficientConfidence extends AccessValidationFailure
-  case EmailMismatch extends AccessValidationFailure
-  // The above two are probably the only fields we care about the three below can potentially be removed
-  case AffinityMismatch extends AccessValidationFailure
-  case NinoMismatch extends AccessValidationFailure
-  case NameMismatch extends AccessValidationFailure
+object AccessValidationFailure {
+  given Writes[AccessValidationFailure] = Writes(failure => JsString(failure.toString))
+}
 
 object IdentityValidationPolicy {
 
@@ -57,8 +48,11 @@ object IdentityValidationPolicy {
     def matches(a: Option[String], b: Option[String]): Boolean =
       a.map(_.toLowerCase.trim) == b.map(_.toLowerCase.trim)
 
-    def nameMatches(name: Option[Name], recipient: RecipientDetails): Boolean =
-      matches(name.flatMap(_.name), Some(recipient.firstName.trim + " " + recipient.lastName.trim))
+    def fullNameMatches(fullName: Option[Name], recipient: RecipientDetails): Boolean =
+      matches(
+        fullName.flatMap(fn => fn.name.map(first => s"$first ${fn.lastName.getOrElse("")}")),
+        Some(recipient.firstName.trim + " " + recipient.lastName.trim)
+      )
 
     (
       Validated.condNel(
@@ -82,7 +76,7 @@ object IdentityValidationPolicy {
         NinoMismatch
       ),
       Validated.condNel(
-        nameMatches(user.name, recipient),
+        fullNameMatches(user.name, recipient),
         SuccessfulResult,
         NameMismatch
       )
@@ -91,4 +85,5 @@ object IdentityValidationPolicy {
       case Validated.Invalid(e) => Left(e.toList)
     }
   }
+
 }

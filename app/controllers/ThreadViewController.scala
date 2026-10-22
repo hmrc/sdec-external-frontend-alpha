@@ -17,11 +17,12 @@
 package controllers
 
 import controllers.actions.IdentifyExternalUser
-import models.sdec.IdentityValidationPolicy
+import models.audit.ThreadAccessOutcome
+import models.sdec.{AccessLevel, IdentityValidationPolicy}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.*
-import service.ThreadReferenceServiceAlgebra
+import service.{AuditServiceAlgebra, ThreadReferenceServiceAlgebra}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{LimitedThreadInterruptionView, ThreadView}
 
@@ -32,6 +33,7 @@ class ThreadViewController @Inject() (
   val controllerComponents:      MessagesControllerComponents,
   identifyExternalUser:          IdentifyExternalUser,
   threadReferenceService:        ThreadReferenceServiceAlgebra,
+  auditService:                  AuditServiceAlgebra,
   threadView:                    ThreadView,
   limitedThreadInterruptionView: LimitedThreadInterruptionView
 )(using ec: ExecutionContext)
@@ -43,10 +45,14 @@ class ThreadViewController @Inject() (
     given Request[AnyContent] = request
     threadReferenceService
       .checkThreadReference(threadId)
-      .map { thread =>
-        IdentityValidationPolicy.validate(request.externalUser, thread.recipientDetails) match {
+      .map { threadRef =>
+        IdentityValidationPolicy.validate(request.externalUser, threadRef.recipientDetails) match {
           case Right(_) =>
-            Ok(threadView(thread))
+            auditService.auditThreadViewed(request.externalUser, threadId, AccessLevel.Full)
+            Ok(threadView(threadRef))
+          case Left(errors) if AccessLevel.fromAccessValidationFailures(errors) == AccessLevel.NoAccess =>
+            auditService.auditThreadAccessAttempt(request.externalUser, threadId, ThreadAccessOutcome.Denied, errors)
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
           case Left(_) =>
             Ok(limitedThreadInterruptionView(threadId))
         }
@@ -56,4 +62,5 @@ class ThreadViewController @Inject() (
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
   }
+
 }

@@ -37,6 +37,6 @@ object IdentityProvider {
             .getOrElse(JsError(s"Unknown Identity Provider: $s"))
         }
       ),
-      Writes(p => JsString(p.providerType))
+      Writes(identityProvider => JsString(identityProvider.providerType))
     )
 }

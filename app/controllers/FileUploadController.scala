@@ -16,13 +16,14 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
+import controllers.actions.IdentifyExternalUser
 import jakarta.inject.Inject
 import models.{Mode, UploadedFile}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.libs.Files.TemporaryFile
 import play.api.mvc.*
+import service.AuditServiceAlgebra
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{FileUploaded, FileUploaderView}
 
@@ -31,7 +32,8 @@ import scala.concurrent.ExecutionContext
 
 class FileUploadController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify:                 IdentifierAction,
+  identifyExternalUser:     IdentifyExternalUser,
+  auditService:             AuditServiceAlgebra,
   fileUploaderView:         FileUploaderView,
   fileUploadedView:         FileUploaded
 )(using ec: ExecutionContext)
@@ -39,13 +41,13 @@ class FileUploadController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = identify { implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] = identifyExternalUser { implicit request =>
     logger.info(s"File Uploading Page")
     Ok(fileUploaderView())
   }
 
   def upload(mode: Mode): Action[MultipartFormData[TemporaryFile]] =
-    identify(parse.multipartFormData) { implicit request =>
+    identifyExternalUser(parse.multipartFormData) { implicit request =>
       request.body.file("fileUpload1") match {
         case Some(filePart) =>
           val uploadDir: Path = getUploadLocation()
@@ -67,6 +69,7 @@ class FileUploadController @Inject() (
           logger.info(
             s"File uploaded: ${result.filename}, ${result.size} bytes"
           )
+          auditService.auditSingleFileUploaded(request.externalUser, result)
           Ok(fileUploadedView(List(result)))
         case None =>
           logger.warn("No file uploaded")
@@ -75,7 +78,7 @@ class FileUploadController @Inject() (
     }
 
   def uploadFiles(mode: Mode): Action[MultipartFormData[TemporaryFile]] =
-    identify(parse.multipartFormData) { implicit request =>
+    identifyExternalUser(parse.multipartFormData) { implicit request =>
       if request.body.files.isEmpty then {
         BadRequest(fileUploaderView())
       } else {
@@ -90,6 +93,7 @@ class FileUploadController @Inject() (
             location = destination
           )
         }
+        auditService.auditMultipleFilesUploaded(request.externalUser, uploadedFiles)
         Ok(fileUploadedView(uploadedFiles))
       }
     }

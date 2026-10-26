@@ -22,8 +22,7 @@ import org.scalatest.matchers.must.Matchers
 class ThreadAccessPolicySpec extends AnyFreeSpec with Matchers {
 
   private val olId = CustomerIdentifier(IdentityProvider.OneLogin, "sub-123")
-  private val ggId =
-    CustomerIdentifier(IdentityProvider.GovernmentGateway, "cred-123")
+  private val ggId = CustomerIdentifier(IdentityProvider.GovernmentGateway, "cred-123")
 
   private def attributes(
     email:        Option[String] = None,

@@ -63,7 +63,7 @@
 
             @if(ThreadSummaryViewModel.canReply(thread)) {
                 @govukButton(Button(
-                    href = Some(routes.DevelopmentInProgressController.onPageLoad().url),
+                    href = Some(routes.FileMftUploadController.onPageLoad().url),
                     content = Text(messages("threadview.button.reply"))
                 ))
             }
